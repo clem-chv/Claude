@@ -262,11 +262,11 @@ var DEFAULT_SETTINGS = {
   ues:{
     UE1:{name:'Gestion juridique, fiscale et sociale', color:'#2F5BD3'},
     UE2:{name:'Finance', color:'#1F8A5B'},
-    UE3:{name:'Management et contrôle de gestion', color:'#C8632B'},
+    UE3:{name:'Contrôle de gestion et stratégie', color:'#C8632B'},
     UE4:{name:'Comptabilité et audit', color:'#6B4FBB'},
     UE5:{name:'Management des systèmes d’information', color:'#0F7C80'},
     UE6:{name:'Oral d’économie en anglais', color:'#B8456F'},
-    UE7:{name:'Mémoire', color:'#5F6B7A'}
+    UE7:{name:'Mémoire professionnel', color:'#5F6B7A'}
   },
   boxes:{ retenir:'#2F5BD3', piege:'#C2410C', exemple:'#15803D', article:'#6B7280' }
 };
@@ -365,9 +365,10 @@ var Store = {
     }, 600);
   }
 };
+var OLD_NAMES={ 'Management et contrôle de gestion':1, 'Mémoire':1 };
 function mergeSettings(v){
   var s=clone(DEFAULT_SETTINGS); if(!v) return s;
-  UE_KEYS.forEach(function(k){ if(v.ues && v.ues[k]){ if(typeof v.ues[k].name==='string') s.ues[k].name=v.ues[k].name; if(v.ver===2 && /^#[0-9a-fA-F]{6}$/.test(v.ues[k].color||'')) s.ues[k].color=v.ues[k].color; } });
+  UE_KEYS.forEach(function(k){ if(v.ues && v.ues[k]){ if(typeof v.ues[k].name==='string' && !OLD_NAMES[v.ues[k].name]) s.ues[k].name=v.ues[k].name; if(v.ver===2 && /^#[0-9a-fA-F]{6}$/.test(v.ues[k].color||'')) s.ues[k].color=v.ues[k].color; } });
   Object.keys(BOXK).forEach(function(k){ if(v.ver===2 && v.boxes && /^#[0-9a-fA-F]{6}$/.test(v.boxes[k]||'')) s.boxes[k]=v.boxes[k]; });
   return s;
 }
