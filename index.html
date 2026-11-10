@@ -438,7 +438,7 @@ function buildItem(it, f, opts){
   if(it.type==='node'){
     var nc=nodeColors(it,c), shape=it.shape||'rect';
     el.className+=' node '+shape+(it.auto!==false?' auto':'');
-    el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.color=nc.fg;
+    el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.color=it.textColor||nc.fg;
     if(it.auto===false){ el.style.width=(it.w||140)+'px'; el.style.height=(it.h||56)+'px'; }
     if(shape==='diamond'){
       el.innerHTML='<svg class="dbg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="50,1.5 98.5,50 50,98.5 1.5,50" fill="'+nc.bg+'" stroke="'+nc.bd+'" stroke-width="'+(nc.bw*1.2)+'" vector-effect="non-scaling-stroke"/></svg>';
@@ -451,12 +451,13 @@ function buildItem(it, f, opts){
     el.style.background=mixWhite(bc,0.10); el.style.border='1px solid '+mixWhite(bc,0.55);
     el.innerHTML='<div class="lbl" style="color:'+ink(bc)+'">'+esc(BOXK[it.kind]||'Encadré')+'</div>'+(editing?'<div class="bt raw" data-edit contenteditable="true"></div>':'<div class="bt">'+rich(it.text||'')+'</div>');
     if(editing) el.querySelector('[data-edit]').textContent=it.text||'';
+    if(it.textColor) el.querySelector('.bt').style.color=it.textColor;
   } else if(it.type==='text'){
-    el.className+=' txt '+(it.size||'body'); el.style.color=it.color?ink(it.color):'#111827'; el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.width=(it.w||400)+'px';
+    el.className+=' txt '+(it.size||'body'); el.style.color=it.textColor||(it.color?ink(it.color):'#111827'); el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.width=(it.w||400)+'px';
     el.innerHTML=editing?'<div class="bt raw" data-edit contenteditable="true"></div>':'<div class="bt">'+rich(it.text||'')+'</div>';
     if(editing) el.querySelector('[data-edit]').textContent=it.text||'';
   } else if(it.type==='formula'){
-    el.className+=' formula'; el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.width=(it.w||PW-2*M)+'px'; if(it.color){ el.style.borderColor=mixWhite(it.color,0.6); el.style.background=mixWhite(it.color,0.06); }
+    el.className+=' formula'; el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.width=(it.w||PW-2*M)+'px'; if(it.color){ el.style.borderColor=mixWhite(it.color,0.6); el.style.background=mixWhite(it.color,0.06); } if(it.textColor) el.style.color=it.textColor;
     el.innerHTML=(it.label?'<div class="lbl"'+(it.color?' style="color:'+ink(it.color)+'"':'')+'>'+esc(it.label)+'</div>':'')+(editing?'<div class="bt raw" data-edit contenteditable="true" style="font-family:ui-monospace,Menlo,monospace;font-size:15px"></div>':'<div class="bt">'+formulaHtml(it.text||'')+'</div>');
     if(editing) el.querySelector('[data-edit]').textContent=it.text||'';
   } else if(it.type==='table'){
@@ -465,11 +466,12 @@ function buildItem(it, f, opts){
     (it.rows||[]).forEach(function(r,ri){
       t+='<tr>'; r.forEach(function(cell,ci){
         var head=it.header && ri===0, first=ci===0 && !head;
-        var st='border-top:'+(ri?'1px solid '+mixWhite(c,0.3):'0')+';'+(head?'background:'+c+';color:'+onColor(c)+';font-weight:700;':'')+(first?'background:'+mixWhite(c,0.1)+';font-weight:600;':'');
+        var st='border-top:'+(ri?'1px solid '+mixWhite(c,0.3):'0')+';'+(head?'background:'+c+';color:'+onColor(c)+';font-weight:700;':'')+(first?'background:'+mixWhite(c,0.1)+';font-weight:600;':'')+(!head && it.textColor?'color:'+it.textColor+';':'');
         t+='<td style="'+st+'"'+(editing?' contenteditable="true" data-r="'+ri+'" data-c="'+ci+'"':'')+'>'+(editing?esc(cell):rich(cell))+'</td>';
       }); t+='</tr>';
     });
     el.innerHTML=t+'</table>';
+    if(it.textColor) el.style.color=it.textColor;
   }
   if(opts.sel===it.id && !editing){ el.className+=' sel'; var hd=document.createElement('div'); hd.className='rh'; hd.setAttribute('data-rh','1'); hd.title='Redimensionner'; el.appendChild(hd); }
   if(editing) el.className+=' editing';
@@ -565,7 +567,8 @@ function generate(f, pi){
     var k=n.text.split('\n')[0].trim().toLowerCase(), o=old[k]; var sp=shapeFor(n.lvl,layout);
     var it={ id:(o && !used[o.id])?o.id:uid(), type:'node', gen:true, text:n.text, shape:sp.shape, style:sp.style, auto:true, x:0, y:0 };
     if(o && !used[o.id]){ used[o.id]=1; if(o.moved){ it.moved=true; it.x=o.x; it.y=o.y; it.shape=o.shape; it.style=o.style; it.auto=o.auto; it.w=o.w; it.h=o.h; } else if(o.custom){ it.shape=o.shape; it.style=o.style; it.custom=true; }
-    if(o && o.color) it.color=o.color; }
+    if(o && o.color) it.color=o.color;
+    if(o && o.textColor) it.textColor=o.textColor; }
     var sz=measureItem(it,f); n.w=sz.w; n.h=sz.h; n.it=it; nodes.push(it);
     if(parent) arrows.push({ id:uid(), type:'arrow', gen:true, from:parent.it.id, to:it.id, style: layout==='carte'?'straight':'curve' });
     n.children.forEach(function(ch){ mk(ch, n); });
@@ -899,32 +902,37 @@ function drawProps(){
   } else if(it.type==='table'){
     h+='<button class="tb" data-p="row+">+ Ligne</button><button class="tb" data-p="row-">− Ligne</button><button class="tb" data-p="col+">+ Colonne</button><button class="tb" data-p="col-">− Colonne</button><button class="tb'+on(it.header)+'" data-p="header">En-tête</button>';
   }
-  h+='<span class="tsep"></span><button class="tb" data-color="1" aria-haspopup="true" title="Couleur de l\u2019élément"><span class="sw" style="background:'+curColor(it)+'"></span>Couleur'+ico(I.down)+'</button>';
+  h+='<span class="tsep"></span><button class="tb" data-color="1" aria-haspopup="true" title="Couleur de l\u2019élément"><span class="sw" style="background:'+curColor(it)+'"></span>'+(it.type==='text'?'Couleur':'Fond')+ico(I.down)+'</button>'+(it.type!=='arrow'?'<button class="tb" data-tcolor="1" aria-haspopup="true" title="Couleur du texte"><span style="font-weight:800;font-size:15px;line-height:1;border-bottom:3px solid '+curText(it)+';padding:0 2px">A</span>Texte'+ico(I.down)+'</button>':'');
   h+='<span class="tsep"></span>'+(it.type!=='arrow'?'<button class="tb" data-p="dup" aria-label="Dupliquer" title="Dupliquer">'+ico(I.dup)+'</button>':'')+'<button class="tb" data-p="del" aria-label="Supprimer" title="Supprimer (Suppr)">'+ico(I.trash)+'</button>';
   el.innerHTML=h; bindProps();
 }
 function bindProps(){
   $$('#props [data-p]').forEach(function(b){ b.onclick=function(){ propAction(b.getAttribute('data-p')); }; });
-  var cb=$('#props [data-color]'); if(cb) cb.onclick=function(e){ e.stopPropagation(); openColorPop(cb); };
+  var cb=$('#props [data-color]'); if(cb) cb.onclick=function(e){ e.stopPropagation(); openColorPop(cb,'color'); };
+  var tb=$('#props [data-tcolor]'); if(tb) tb.onclick=function(e){ e.stopPropagation(); openColorPop(tb,'textColor'); };
 }
 var PALETTE=['#1A1A18','#5F6B7A','#9AA1AB','#2F5BD3','#3B82C4','#0F7C80','#1F8A5B','#6E8B1F','#B8860B','#C8632B','#B42318','#B8456F','#6B4FBB','#8B5E3C','#334155','#7C2D12','#0E4F8A','#14532D'];
 function autoColor(it){ var f=ED.f; if(it.type==='box') return S.settings.boxes[it.kind]||'#888888'; if(it.type==='text') return '#111827'; if(it.type==='formula') return '#9CA3AF'; if(it.type==='arrow') return ink(ueColor(f.ue)); return ueColor(f.ue); }
 function curColor(it){ return it.color||autoColor(it); }
-function openColorPop(btn){
+function autoText(it){ if(it.type==='node') return nodeColors(it, it.color||ueColor(ED.f.ue)).fg; if(it.type==='text') return it.color?ink(it.color):'#111827'; return '#111827'; }
+function curText(it){ return it.textColor||autoText(it); }
+function openColorPop(btn, field){
+  field=field||'color'; var isT=field==='textColor';
   closeMenus(); var it=findItem(curPage(),ED.sel); if(!it) return;
   var b=btn.getBoundingClientRect(), m=document.createElement('div'); m.className='menu-pop cpop'; m.setAttribute('role','dialog'); m.setAttribute('aria-label','Couleur');
-  var cur=(it.color||'').toLowerCase();
+  var cur=(it[field]||'').toLowerCase();
   m.innerHTML='<div class="cg">'+PALETTE.map(function(c){ return '<button type="button" data-c="'+c+'" class="'+(cur===c.toLowerCase()?'on':'')+'" style="background:'+c+'" aria-label="Couleur '+c+'"></button>'; }).join('')+'</div>'+
-    '<div class="cl">Autres</div><label><input type="color" id="cpCustom" value="'+curColor(it)+'">Couleur personnalisée</label>'+
-    '<button type="button" data-c="" style="margin-top:4px"><span class="sw" style="background:'+autoColor(it)+'"></span>'+(it.type==='box'?'Couleur du type d\u2019encadré':(it.type==='text'?'Couleur par défaut':'Couleur de l\u2019UE'))+(it.color?'':' ✓')+'</button>';
+    '<div class="cl">Autres</div><label><input type="color" id="cpCustom" value="'+(isT?curText(it):curColor(it))+'">Couleur personnalisée</label>'+
+    '<button type="button" data-c="" style="margin-top:4px"><span class="sw" style="background:'+(isT?autoText(it):autoColor(it))+'"></span>'+(isT?'Couleur automatique':it.type==='box'?'Couleur du type d\u2019encadré':(it.type==='text'?'Couleur par défaut':'Couleur de l\u2019UE'))+(it[field]?'':' ✓')+'</button>';
   m.style.left=Math.min(b.left, window.innerWidth-260)+'px'; m.style.top=(b.bottom+6)+'px';
-  m.addEventListener('click', function(ev){ ev.stopPropagation(); var t=ev.target.closest('[data-c]'); if(!t) return; setColor(t.getAttribute('data-c')); closeMenus(); });
+  m.addEventListener('click', function(ev){ ev.stopPropagation(); var t=ev.target.closest('[data-c]'); if(!t) return; setColor(t.getAttribute('data-c'), field); closeMenus(); });
   document.body.appendChild(m);
-  var ci=m.querySelector('#cpCustom'); ci.addEventListener('change', function(){ setColor(ci.value); closeMenus(); });
+  var ci=m.querySelector('#cpCustom'); ci.addEventListener('change', function(){ setColor(ci.value, field); closeMenus(); });
 }
-function setColor(c){
+function setColor(c, field){
+  field=field||'color';
   var it=findItem(curPage(),ED.sel); if(!it) return; commitEdit(); pushHist();
-  if(c) it.color=c; else delete it.color;
+  if(c) it[field]=c; else delete it[field];
   if(it.gen) it.custom=true;
   touch(); drawPage(); drawProps();
 }
