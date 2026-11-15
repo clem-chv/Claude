@@ -207,6 +207,8 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .rh{position:absolute;right:-11px;bottom:-11px;width:16px;height:16px;background:#fff;border:2px solid #2563EB;border-radius:4px;cursor:nwse-resize;z-index:4;touch-action:none}
 .it.over{outline:2px dashed #B42318!important;outline-offset:3px}
 .overmsg{position:absolute;left:48px;right:48px;bottom:6px;z-index:7;background:#FEF3F2;color:#B42318;border:1px solid #FDA29B;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;text-align:center;pointer-events:none}
+.gridov{position:absolute;inset:0;z-index:0;pointer-events:none}
+.marginov{position:absolute;left:48px;right:48px;bottom:62px;border:1px dashed rgba(180,35,24,.45);z-index:0;pointer-events:none}
 .guide{position:absolute;background:#EC4899;z-index:6;pointer-events:none}
 @media (max-width:760px){
  .top{padding:0 12px}
@@ -290,6 +292,10 @@ var CONTENT_BOTTOM = PH - 70;
 /* ---------------- state ---------------- */
 var S = { lastOrient:(function(){ try{ return localStorage.getItem('fichesDSCG.orient')||'portrait'; }catch(e){ return 'portrait'; } })(), settings: clone(DEFAULT_SETTINGS), fiches: [], lib:{ ue:'', type:'', q:'', sort:'upd', sel:{} }, home:{ ue:'', q:'' } };
 var ED = null;
+var GRID=(function(){ try{ var g=JSON.parse(localStorage.getItem('fichesDSCG.grid')||'null'); if(g) return g; }catch(e){} return { size:0, snap:false, margins:false }; })();
+function saveGrid(){ try{ localStorage.setItem('fichesDSCG.grid', JSON.stringify(GRID)); }catch(e){} }
+var MM=794/210;
+function gridPx(){ return GRID.size==='5'?5*MM:(GRID.size==='10'?10*MM:0); }
 function ueOf(k){ return S.settings.ues[k] || { name:k, color:'#5F6B7A' }; }
 function ueColor(k){ return ueOf(k).color; }
 function getFiche(id){ for(var i=0;i<S.fiches.length;i++){ if(S.fiches[i].id===id) return S.fiches[i]; } return null; }
@@ -522,6 +528,12 @@ function renderPage(container, f, pi, opts){
   }
   container.appendChild(h);
   var svg=document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('class','ar'); svg.setAttribute('width',PW); svg.setAttribute('height',PH); container.appendChild(svg);
+  if(opts.interactive && (GRID.size || GRID.margins)){
+    var gp=gridPx(), gv=document.createElement('div'); gv.className='gridov'; gv.setAttribute('aria-hidden','true');
+    if(gp){ var maj=GRID.size==='5'?gp*2:gp*5; gv.style.backgroundImage='linear-gradient(to right, rgba(47,91,211,.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(47,91,211,.22) 1px, transparent 1px), linear-gradient(to right, rgba(47,91,211,.09) 1px, transparent 1px), linear-gradient(to bottom, rgba(47,91,211,.09) 1px, transparent 1px)'; gv.style.backgroundSize=maj+'px '+maj+'px, '+maj+'px '+maj+'px, '+gp+'px '+gp+'px, '+gp+'px '+gp+'px'; }
+    container.insertBefore(gv, container.firstChild);
+    if(GRID.margins){ var mg=document.createElement('div'); mg.className='marginov'; mg.setAttribute('aria-hidden','true'); mg.style.top=contentTop(pi)-14+'px'; container.appendChild(mg); }
+  }
   if(opts.interactive && !page.items.length){ var hp=document.createElement('div'); hp.className='hintpage'; hp.innerHTML='<b style="color:#1A1A18">Page vide</b><br>Écris un plan dans le panneau de gauche pour générer un schéma,<br>ou ajoute un tableau, un texte, un encadré ou une formule avec la barre d’outils.'; container.appendChild(hp); }
   page.items.forEach(function(it){ if(it.type!=='arrow') container.appendChild(buildItem(it,f,opts)); });
   var ft=document.createElement('div'); ft.className='pf'; ft.innerHTML='<span>Fiches DSCG · '+esc(f.ue)+(f.theme?' · '+esc(f.theme):'')+'</span><span>page '+(pi+1)+' / '+n+'</span>'; container.appendChild(ft);
@@ -850,6 +862,7 @@ function viewEdit(id){
    '<button class="tb" data-add="rect" title="Ajouter un rectangle" aria-label="Rectangle">'+ico(I.rect)+'</button><button class="tb" data-add="oval" title="Ajouter un ovale" aria-label="Ovale">'+ico(I.oval)+'</button><button class="tb" data-add="diamond" title="Ajouter un losange" aria-label="Losange">'+ico(I.dia)+'</button>'+
    '<button class="tb" id="tArrow" title="Relier deux blocs par une flèche" aria-label="Flèche">'+ico(I.arrow)+'</button><button class="tb" data-add="text" title="Ajouter un texte">'+ico(I.text)+'Texte</button>'+
    '<button class="tb" id="tBox" aria-haspopup="true">'+ico(I.box)+'Encadré'+ico(I.down)+'</button><button class="tb" data-add="formula">'+ico(I.fx)+'Formule</button><button class="tb" data-add="table">'+ico(I.table)+'Tableau</button><span class="tsep"></span>'+
+   '<button class="tb" id="tGrid" aria-haspopup="true" title="Afficher un quadrillage">'+ico('<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>')+'Quadrillage'+ico(I.down)+'</button><span class="tsep"></span>'+
    '<div class="props" id="props"></div><span style="flex:1;min-width:10px"></span><button class="tb" id="tAlign" title="Aligner les blocs proches">'+ico(I.align)+'Aligner</button></div>'+
    '<div class="ebody"><aside class="plan" id="plan" aria-label="Plan du schéma"></aside><div class="stage" id="stage"><div class="pw" id="pw"><div class="page" id="page"></div></div></div></div>'+
    '<div class="strip" id="strip" aria-label="Pages de la fiche"></div></div>';
@@ -866,6 +879,16 @@ function viewEdit(id){
   $('#tArrow').onclick=function(){ commitEdit(); ED.tool=ED.tool==='arrow'?null:'arrow'; ED.from=null; ED.sel=null; drawPage(); drawProps(); };
   $('#tBox').onclick=function(e){ e.stopPropagation(); var b=this.getBoundingClientRect(); closeMenus(); var m=document.createElement('div'); m.className='menu-pop'; m.innerHTML=Object.keys(BOXK).map(function(k){ return '<button data-k="'+k+'"><span class="dot" style="background:'+S.settings.boxes[k]+'"></span>'+BOXK[k]+'</button>'; }).join(''); m.style.left=Math.min(b.left,window.innerWidth-270)+'px'; m.style.top=(b.bottom+6)+'px'; m.onclick=function(ev){ var t=ev.target.closest('[data-k]'); if(t){ closeMenus(); addItem('box', t.getAttribute('data-k')); } }; document.body.appendChild(m); };
   $('#tAlign').onclick=autoAlign;
+  var gb=$('#tGrid'); gb.classList.toggle('on', !!(GRID.size||GRID.margins));
+  gb.onclick=function(e){ e.stopPropagation(); closeMenus(); var b=this.getBoundingClientRect(), m=document.createElement('div'); m.className='menu-pop'; m.style.padding='10px';
+    var opt=function(v,l){ return '<label style="display:flex;align-items:center;gap:10px;min-height:36px;font-size:14px;cursor:pointer"><input type="radio" name="gsz" value="'+v+'"'+(String(GRID.size||'0')===v?' checked':'')+'>'+l+'</label>'; };
+    m.innerHTML='<div class="lab" style="margin-bottom:4px">Quadrillage (à l\u2019écran seulement)</div>'+opt('0','Aucun')+opt('5','Petits carreaux · 5 mm')+opt('10','Grands carreaux · 1 cm')+
+      '<div style="border-top:1px solid var(--border);margin:8px 0"></div><label style="display:flex;align-items:center;gap:10px;min-height:36px;font-size:14px;cursor:pointer"><input type="checkbox" id="gSnap"'+(GRID.snap?' checked':'')+'>Aimanter les éléments au quadrillage</label>'+
+      '<label style="display:flex;align-items:center;gap:10px;min-height:36px;font-size:14px;cursor:pointer"><input type="checkbox" id="gMar"'+(GRID.margins?' checked':'')+'>Afficher les marges d\u2019impression</label>';
+    m.style.left=Math.min(b.left, window.innerWidth-300)+'px'; m.style.top=(b.bottom+6)+'px';
+    m.addEventListener('click', function(ev){ ev.stopPropagation(); });
+    m.addEventListener('change', function(){ var r=m.querySelector('input[name=gsz]:checked'); GRID.size=r&&r.value!=='0'?r.value:0; GRID.snap=m.querySelector('#gSnap').checked; GRID.margins=m.querySelector('#gMar').checked; saveGrid(); gb.classList.toggle('on', !!(GRID.size||GRID.margins)); drawPage(); });
+    document.body.appendChild(m); };
   var page=$('#page');
   page.addEventListener('pointerdown', onDown);
   page.addEventListener('pointermove', onMove);
@@ -1094,9 +1117,9 @@ function onMove(e){
   clearGuides();
   if(d.mode==='resize'){
     if(it.type==='node'){ it.auto=false; it.w=Math.round(Math.max(70,d.ow+dx*2)); it.h=Math.round(Math.max(36,d.oh+dy*2)); el.classList.remove('auto'); el.style.width=it.w+'px'; el.style.height=it.h+'px'; }
-    else { it.w=Math.round(clamp(d.ow+dx,80,PW-it.x-10)); el.style.width=it.w+'px'; }
+    else { var gq=GRID.snap?gridPx():0, nw=d.ow+dx; if(gq) nw=Math.round(nw/gq)*gq; it.w=Math.round(clamp(nw,80,PW-it.x-10)); el.style.width=it.w+'px'; }
   } else {
-    var nx=d.ox+dx, ny=d.oy+dy, s=snap(it, el, nx, ny); it.x=Math.round(s.x); it.y=Math.round(s.y); el.style.left=it.x+'px'; el.style.top=it.y+'px'; s.guides.forEach(addGuide);
+    var nx=d.ox+dx, ny=d.oy+dy, s=snap(it, el, nx, ny), gp=GRID.snap?gridPx():0; if(gp){ s.x=Math.round(nx/gp)*gp; s.y=Math.round(ny/gp)*gp; s.guides=[]; } it.x=Math.round(s.x); it.y=Math.round(s.y); el.style.left=it.x+'px'; el.style.top=it.y+'px'; s.guides.forEach(addGuide);
   }
   if(it.gen) it.moved=true;
   drawArrows($('#page'), ED.f, ED.pi, { interactive:true, sel:ED.sel });
