@@ -52,7 +52,13 @@ h1,h2,h3{font-family:'Source Serif 4',Georgia,serif;font-weight:600;margin:0;let
 .tag .dot{width:8px;height:8px}
 .pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:12px;font-weight:700;flex:none}
 /* layout */
-.wrap{max-width:1120px;margin:0 auto;padding:36px 24px 72px}
+.wrap{max-width:1880px;margin:0 auto;padding:28px clamp(16px,2.4vw,40px) 64px}
+.homegrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:36px;align-items:start}
+.hside{position:sticky;top:78px;display:flex;flex-direction:column;gap:12px}
+.hside .tiles{grid-template-columns:1fr;gap:8px}
+.hside .tile{padding:11px 14px}
+.hside h2{font-size:19px}
+@media (max-width:980px){ .homegrid{grid-template-columns:1fr} .hside{position:static} .hside .tiles{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))} }
 .ptitle{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;padding-bottom:22px;border-bottom:1px solid var(--border)}
 .ptitle h1{font-size:30px}
 .ptitle p{margin:6px 0 0;color:var(--muted);font-size:14px}
@@ -92,7 +98,7 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .filters{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:20px}
 .filters select{height:36px;padding:0 8px;border-radius:6px;border:1px solid var(--strong);background:#fff;font-size:13px}
 .filters label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:20px}
 .card{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;position:relative}
 .card:hover{border-color:var(--strong)}
 .card.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
@@ -145,8 +151,8 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 /* reader */
 .rhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px}
 .rhead h1{font-size:26px;flex:1 1 260px}
-.pages{display:flex;flex-direction:column;align-items:center;gap:20px}
-.rbg{background:var(--stage);border-radius:8px;padding:24px 12px}
+.pages{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:24px}
+.rbg{background:var(--stage);border-radius:8px;padding:28px 20px}
 /* modal & toast */
 .ov{position:fixed;inset:0;z-index:100;background:rgba(20,20,18,.35);display:flex;align-items:center;justify-content:center;padding:20px}
 .modal{width:min(500px,100%);background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(20,20,18,.18)}
@@ -749,7 +755,7 @@ function route(keepScroll){
   $$('.nav [data-nav]').forEach(function(a){ var n=a.getAttribute('data-nav'); var on= n===r.name || (n==='fiches' && (r.name==='lire'||r.name==='edit')); a.classList.toggle('on', on); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
   if(ED && r.name!=='edit'){ commitEdit(); var lid=ED.fid; if(Store.timers[lid]){ clearTimeout(Store.timers[lid]); delete Store.timers[lid]; Store.flush(lid); } ED=null; }
   var y=window.scrollY;
-  if(r.name==='accueil'||r.name==='personnaliser') viewHome(r.name==='personnaliser' && key!==lastRoute);
+  if(r.name==='accueil'||r.name==='personnaliser') viewHome(r.name==='personnaliser'?'settings':false);
   else if(r.name==='fiches'||r.name==='exporter') viewLib(r.name==='exporter');
   else if(r.name==='lire') viewRead(r.id);
   else if(r.name==='edit'){ if(!ED || ED.fid!==r.id) viewEdit(r.id); }
@@ -799,13 +805,21 @@ function viewHome(scrollDesign){
   var v=$('#view'), hs=S.home;
   var counts={}, last={}; sortedFiches().forEach(function(f){ counts[f.ue]=(counts[f.ue]||0)+1; if(!last[f.ue]) last[f.ue]=f.title; });
   var scope= hs.ue ? hs.ue+' · '+ueOf(hs.ue).name : 'Toutes les UE';
-  var h='<div class="wrap"><div class="ptitle" style="flex-direction:column;align-items:stretch;gap:14px"><div><h1>Que veux-tu réviser ?</h1><p>Cherche une notion dans tes fiches, ou choisis une UE.</p></div>'+
+  if(scrollDesign==='settings') return viewSettings();
+  var h='<div class="wrap"><div class="homegrid"><div class="hmain"><div class="ptitle" style="flex-direction:column;align-items:stretch;gap:14px"><div><h1>Que veux-tu réviser ?</h1><p>Cherche une notion dans tes fiches, ou choisis une UE.</p></div>'+
     '<label class="search">'+ico(I.search)+'<span class="vh">Rechercher dans mes fiches</span><input id="hq" type="search" value="'+esc(hs.q)+'" placeholder="ex. goodwill, CMPC, SAS…"><small>'+esc(hs.ue||'toutes les UE')+'</small></label>'+
     ueTabs(hs.ue,'data-hue')+'</div>';
   h+='<section class="sec" aria-labelledby="hres"><h2 id="hres">'+esc(scope)+'</h2><div id="hresList"></div></section>';
-  h+='<section class="sec" aria-labelledby="hues"><h2 id="hues">Mes UE</h2><div class="tiles">'+UE_KEYS.map(function(k){ var u=ueOf(k), on=hs.ue===k, n=counts[k]||0;
-    return '<button type="button" class="tile'+(on?' on':'')+'" data-hue="'+k+'"><span class="r">'+tagHtml(k)+'<span class="m">'+n+' fiche'+(n>1?'s':'')+'</span></span><span class="n">'+esc(u.name)+'</span><span class="m">'+(last[k]?'Dernière : '+esc(last[k]):'Aucune fiche pour l’instant')+'</span></button>'; }).join('')+'</div></section>';
-  h+='<section class="sec" id="design" aria-labelledby="hdes"><h2 id="hdes">Personnaliser</h2><p class="d">Les couleurs s’appliquent à toutes les fiches et aux PDF.</p><div class="two">'+
+  h+='</div><aside class="hside" aria-labelledby="hues"><h2 id="hues">Mes UE</h2><div class="tiles">'+UE_KEYS.map(function(k){ var u=ueOf(k), on=hs.ue===k, n=counts[k]||0;
+    return '<button type="button" class="tile'+(on?' on':'')+'" data-hue="'+k+'"><span class="r">'+tagHtml(k)+'<span class="m">'+n+' fiche'+(n>1?'s':'')+'</span></span><span class="n">'+esc(u.name)+'</span><span class="m">'+(last[k]?'Dernière : '+esc(last[k]):'Aucune fiche pour l’instant')+'</span></button>'; }).join('')+'</div><a class="btn sm ghost" href="#personnaliser" style="align-self:flex-start">Personnaliser les couleurs</a></aside></div></div>';
+  v.innerHTML=h;
+  drawHomeResults();
+  var q=$('#hq'); q.addEventListener('input', function(){ hs.q=q.value; drawHomeResults(); });
+  $$('[data-hue]', v).forEach(function(b){ b.addEventListener('click', function(){ var k=b.getAttribute('data-hue'); hs.ue = (k && hs.ue===k && b.classList.contains('tile'))?'':k; route(true); }); });
+}
+function viewSettings(){
+  var v=$('#view');
+  var h='<div class="wrap"><div class="ptitle"><div><h1 id="hdes">Personnaliser</h1><p>Les couleurs s’appliquent à toutes les fiches et aux PDF.</p></div></div><section class="sec" id="design" aria-labelledby="hdes" style="margin-top:24px"><div class="two">'+
     '<div class="panel"><span class="lab">Nom et couleur de chaque UE</span><div>'+UE_KEYS.map(function(k){ var u=ueOf(k); return '<div class="row"><label class="vh" for="uc'+k+'">Couleur '+k+'</label><input type="color" id="uc'+k+'" data-uc="'+k+'" value="'+u.color+'"><b style="width:38px;font-size:14px">'+k+'</b><label class="vh" for="un'+k+'">Nom '+k+'</label><input type="text" id="un'+k+'" data-un="'+k+'" value="'+esc(u.name)+'"></div>'; }).join('')+'</div>'+
     '<span class="lab" style="margin-top:12px">Couleur des encadrés</span><div>'+Object.keys(BOXK).map(function(k){ return '<label class="row" style="cursor:pointer"><input type="color" data-bc="'+k+'" value="'+S.settings.boxes[k]+'"><span style="font-size:14px">'+BOXK[k]+'</span></label>'; }).join('')+'</div>'+
     '<div style="margin-top:8px"><button type="button" class="btn sm" id="resetCol">Revenir aux couleurs d’origine</button></div></div>'+
@@ -813,16 +827,14 @@ function viewHome(scrollDesign){
     '<div class="panel"><span class="lab">Sauvegarde</span><p style="margin:0;font-size:14px;line-height:1.55;color:var(--muted)">'+(Store.mode==='db'?'Tes fiches sont enregistrées dans ton compte et se retrouvent sur tes autres appareils. Tu peux aussi garder une copie sur ton ordinateur.':'Tes fiches sont enregistrées dans ce navigateur, sur cet appareil. Télécharge régulièrement une sauvegarde : elle te protège si les données du navigateur sont effacées, et permet de transférer tes fiches sur un autre appareil avec « Importer ».'+lastBk())+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="bkDl">'+ico(I.dl)+'Télécharger une sauvegarde</button><label class="btn sm" style="cursor:pointer">Importer une sauvegarde<input type="file" id="bkUp" accept=".json,application/json" class="vh"></label></div></div></div>'+
     '</div></section></div>';
   v.innerHTML=h;
-  drawHomeResults(); drawPreview();
-  var q=$('#hq'); q.addEventListener('input', function(){ hs.q=q.value; drawHomeResults(); });
-  $$('[data-hue]', v).forEach(function(b){ b.addEventListener('click', function(){ var k=b.getAttribute('data-hue'); hs.ue = (k && hs.ue===k && b.classList.contains('tile'))?'':k; route(true); }); });
-  $$('[data-uc]', v).forEach(function(inp){ inp.addEventListener('input', function(){ S.settings.ues[inp.getAttribute('data-uc')].color=inp.value; drawPreview(); }); inp.addEventListener('change', function(){ Store.saveSettings(); route(true); }); });
-  $$('[data-un]', v).forEach(function(inp){ inp.addEventListener('change', function(){ S.settings.ues[inp.getAttribute('data-un')].name=inp.value.trim()||inp.getAttribute('data-un'); Store.saveSettings(); route(true); }); });
+  drawPreview();
+  $$('[data-uc]', v).forEach(function(inp){ inp.addEventListener('input', function(){ S.settings.ues[inp.getAttribute('data-uc')].color=inp.value; drawPreview(); }); inp.addEventListener('change', function(){ Store.saveSettings(); }); });
+  $$('[data-un]', v).forEach(function(inp){ inp.addEventListener('change', function(){ S.settings.ues[inp.getAttribute('data-un')].name=inp.value.trim()||inp.getAttribute('data-un'); Store.saveSettings(); }); });
   $$('[data-bc]', v).forEach(function(inp){ inp.addEventListener('input', function(){ S.settings.boxes[inp.getAttribute('data-bc')]=inp.value; drawPreview(); }); inp.addEventListener('change', function(){ Store.saveSettings(); }); });
   $('#resetCol').onclick=function(){ var d=clone(DEFAULT_SETTINGS); UE_KEYS.forEach(function(k){ S.settings.ues[k].color=d.ues[k].color; }); S.settings.boxes=d.boxes; Store.saveSettings(); route(true); };
   $('#bkDl').onclick=downloadBackup;
   $('#bkUp').onchange=importBackup;
-  if(scrollDesign){ setTimeout(function(){ var d=$('#design'); if(d) d.scrollIntoView({behavior:'smooth'}); },50); }
+  var od=$('#openData'); if(od) od.onclick=function(){ if(window.fichesFS) window.fichesFS.openDir(); };
 }
 function lastBk(){ var t=null; try{ t=localStorage.getItem('fichesDSCG.lastBackup'); }catch(e){} return '<br><b style="color:var(--text)">Dernière sauvegarde : '+(t?new Date(+t).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'jamais')+'</b>'; }
 function drawHomeResults(){
@@ -886,10 +898,10 @@ function viewRead(id){
   var f=getFiche(id), v=$('#view');
   if(!f){ v.innerHTML='<div class="wrap"><div class="empty">Cette fiche n’existe plus. <a class="btn sm" href="#fiches">Mes fiches</a></div></div>'; return; }
   var all=sortedFiches(), idx=all.indexOf(f), prev=all[idx-1], next=all[idx+1];
-  v.innerHTML='<div class="wrap" style="max-width:900px"><div class="rhead"><a class="btn sm ghost" href="#fiches" aria-label="Retour à mes fiches">'+ico(I.back)+'</a>'+tagHtml(f.ue)+'<h1>'+esc(f.title)+'</h1><a class="btn sm" href="#edit-'+f.id+'">'+ico(I.edit)+'Modifier</a><button class="btn sm pri" id="rPdf">'+ico(I.dl)+'PDF</button></div><div class="rbg"><div class="pages" id="rPages"></div></div>'+
+  v.innerHTML='<div class="wrap"><div class="rhead"><a class="btn sm ghost" href="#fiches" aria-label="Retour à mes fiches">'+ico(I.back)+'</a>'+tagHtml(f.ue)+'<h1>'+esc(f.title)+'</h1><a class="btn sm" href="#edit-'+f.id+'">'+ico(I.edit)+'Modifier</a><button class="btn sm pri" id="rPdf">'+ico(I.dl)+'PDF</button></div><div class="rbg"><div class="pages" id="rPages"></div></div>'+
     '<div style="display:flex;gap:10px;margin-top:20px">'+(prev?'<a class="btn" style="flex:1" href="#lire-'+prev.id+'">'+ico(I.left)+'Fiche précédente</a>':'<span style="flex:1"></span>')+(next?'<a class="btn" style="flex:1" href="#lire-'+next.id+'">Fiche suivante'+ico(I.right)+'</a>':'<span style="flex:1"></span>')+'</div></div>';
   var host=$('#rPages'), W=Math.min(PW, host.clientWidth||PW), sc=W/PW;
-  var hostW=host.clientWidth||PW;
+  var hostW=(host.clientWidth||PW)-8;
   f.pages.forEach(function(p,i){ var pw=document.createElement('div'); pw.className='pw'; var pg=document.createElement('div'); pw.appendChild(pg); host.appendChild(pw); renderPage(pg,f,i,{}); var s2=Math.min(PW,hostW)/PW; pw.style.width=(PW*s2)+'px'; pw.style.height=(PH*s2)+'px'; pg.style.transform='scale('+s2+')'; });
   $('#rPdf').onclick=function(){ exportPDF([f], f.title); };
 }
