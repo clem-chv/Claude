@@ -560,6 +560,10 @@ function buildItem(it, f, opts){
   }
   if(it.fs && it.fs!==1) el.style.setProperty('--fs', it.fs);
   if(it.font && FONTS[it.font]){ el.style.fontFamily=FONTS[it.font]; $$('.bt,.t,.s,td',el).forEach(function(x){ x.style.fontFamily=FONTS[it.font]; }); }
+  if(it.ta||it.va){ var FX={left:'flex-start',center:'center',right:'flex-end',justify:'stretch'}, FY={top:'flex-start',middle:'center',bottom:'flex-end'};
+    if(it.ta){ $$('.bt,.t,.s,.sti,td,.lbl',el).forEach(function(x){ x.style.textAlign=it.ta; }); if(it.type==='node'){ el.style.alignItems=it.ta==='justify'?'stretch':FX[it.ta]; $$('.t,.s',el).forEach(function(x){ x.style.alignSelf='stretch'; }); } if(it.type==='shape'){ var st0=el.querySelector('.st'); if(st0) st0.style.justifyContent=FX[it.ta]; } }
+    if(it.va){ if(it.type==='node') el.style.justifyContent=FY[it.va]; if(it.type==='shape'){ var st1=el.querySelector('.st'); if(st1) st1.style.alignItems=FY[it.va]; } if(it.type==='table') $$('td',el).forEach(function(x){ x.style.verticalAlign={top:'top',middle:'middle',bottom:'bottom'}[it.va]; }); }
+  }
   if(it.rot){ el.style.transform=(it.type==='node'?'translate(-50%,-50%) ':'')+'rotate('+it.rot+'deg)'; if(it.type!=='node') el.style.transformOrigin='50% 50%'; }
   if(opts.multi && opts.multi.indexOf(it.id)>=0) el.className+=' sel';
   if(opts.interactive && it.locked){ var lb=document.createElement('span'); lb.className='lockb'; lb.title='Verrouillé'; lb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>'; el.appendChild(lb); }
@@ -1075,11 +1079,12 @@ function drawProps(){
         '<button class="tb" data-fmt="underline" title="Souligné (Ctrl+U)" aria-label="Souligné"><u style="font-size:15px">S</u></button>'+
         '<button class="tb" data-fmtcolor="1" aria-haspopup="true" title="Couleur du texte sélectionné"><span style="font-weight:800;font-size:15px;line-height:1;border-bottom:3px solid #B42318;padding:0 2px">A</span>Couleur'+ico(I.down)+'</button>'+
         (ei.type!=='node'&&ei.type!=='shape'?'<button class="tb" data-fmt="insertUnorderedList" title="Liste à puces">'+ico('<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>')+'Puces</button><button class="tb" data-fmt="insertOrderedList" title="Liste numérotée">'+ico('<path d="M10 6h10M10 12h10M10 18h10M4 5h1v3M4 11h2l-2 3h2M4 17h2v3H4"/>')+'1. 2. 3.</button>':'')+
-        '<button class="tb" data-fmt="removeFormat" title="Retirer la mise en forme">Effacer</button>'+
+        '<button class="tb" data-fmt="removeFormat" title="Retirer la mise en forme">Effacer</button>'+alignButtons(ei).replace(/data-p="/g,'data-ealign="')+
         (ei.type==='table'?'<span class="tsep"></span><span class="hint">Cellule :</span><button class="tb" data-cell="mr" title="Fusionner avec la cellule de droite">Fusionner →</button><button class="tb" data-cell="md" title="Fusionner avec la cellule du dessous">Fusionner ↓</button><button class="tb" data-cell="split">Séparer</button><button class="tb" data-cellbg="1" aria-haspopup="true">Fond'+ico(I.down)+'</button>':'')+
         '<span class="tsep"></span><button class="tb" data-fmtdone="1">Terminé</button>';
       $$('#props [data-fmt],#props [data-fmtcolor],#props [data-fmtdone],#props [data-cell],#props [data-cellbg]').forEach(function(b){ b.addEventListener('mousedown', function(e){ e.preventDefault(); }); });
       $$('#props [data-cell]').forEach(function(b){ b.onclick=function(){ cellAction(b.getAttribute('data-cell')); }; });
+      $$('#props [data-ealign]').forEach(function(b){ b.addEventListener('mousedown', function(e){ e.preventDefault(); }); b.onclick=function(){ var id=ED.editing, k=b.getAttribute('data-ealign'); commitEdit(); ED.sel=id; propAction(k); startEdit(id); }; });
       var cbb=$('#props [data-cellbg]'); if(cbb) cbb.onclick=function(e){ e.stopPropagation(); openCellBg(this); };
       $$('#props [data-fmt]').forEach(function(b){ b.onclick=function(){ var c=b.getAttribute('data-fmt'); document.execCommand(c, false, null); if(/List$/.test(c)) caretToLineEnd(); }; });
       $('#props [data-fmtdone]').onclick=function(){ commitEdit(); };
@@ -1123,6 +1128,7 @@ function drawProps(){
   } else if(it.type==='table'){
     h+='<button class="tb" data-p="row+">+ Ligne</button><button class="tb" data-p="row-">− Ligne</button><button class="tb" data-p="col+">+ Colonne</button><button class="tb" data-p="col-">− Colonne</button><button class="tb'+on(it.header)+'" data-p="header">En-tête</button>';
   }
+  h+=alignButtons(it);
   if(it.type!=='arrow' && !(it.type==='shape' && (it.kind==='line'||it.kind==='brace'))){ h+='<span class="tsep"></span><label class="vh" for="pFs">Taille du texte</label><select id="pFs" class="psel" data-psel="fs" title="Taille du texte">'+[['0.85','Petit'],['1','Normal'],['1.2','Grand'],['1.45','Très grand']].map(function(o){ return '<option value="'+o[0]+'"'+(String(it.fs||1)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>'+
     '<label class="vh" for="pFf">Police</label><select id="pFf" class="psel" data-psel="font" title="Police">'+[['','Police par défaut'],['sans','Sans empattement'],['serif','Avec empattement'],['hand','Manuscrite']].map(function(o){ return '<option value="'+o[0]+'"'+((it.font||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>'; }
   h+='<span class="tsep"></span><button class="tb" data-color="1" aria-haspopup="true" title="Couleur de l\u2019élément"><span class="sw" style="background:'+curColor(it)+'"></span>'+(it.type==='text'?'Couleur':(it.type==='shape'?'Couleur':'Fond'))+ico(I.down)+'</button>'+(it.type!=='arrow' && !(it.type==='shape' && (it.kind==='line'||it.kind==='brace'))?'<button class="tb" data-tcolor="1" aria-haspopup="true" title="Couleur du texte"><span style="font-weight:800;font-size:15px;line-height:1;border-bottom:3px solid '+curText(it)+';padding:0 2px">A</span>Texte'+ico(I.down)+'</button>':'');
@@ -1227,6 +1233,19 @@ function setColor(c, field){
   if(it.gen) it.custom=true;
   touch(); drawPage(); drawProps();
 }
+function hasText(it){ return it && it.type!=='arrow' && !(it.type==='shape' && (it.kind==='line'||it.kind==='brace')); }
+function hasVAlign(it){ return it && (it.type==='shape' && hasText(it) || it.type==='table' || (it.type==='node' && it.auto===false)); }
+function defTa(it){ return (it.type==='node'||it.type==='shape'||it.type==='formula')?'center':'left'; }
+function defVa(it){ return it.type==='table'?'top':'middle'; }
+function alignButtons(it){
+  if(!hasText(it)) return '';
+  var ta=it.ta||defTa(it), va=it.va||defVa(it), on=function(c){ return c?' on':''; };
+  var H=[['left','Aligner à gauche','<path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>'],['center','Centrer','<path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>'],['right','Aligner à droite','<path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>'],['justify','Justifier','<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>']];
+  var V=[['top','Texte en haut','<path d="M4 4h16M12 8v12M8 12l4-4 4 4"/>'],['middle','Texte au milieu','<path d="M4 12h16M12 3v5M12 16v5M9 6l3 2 3-2M9 18l3-2 3 2"/>'],['bottom','Texte en bas','<path d="M4 20h16M12 4v12M8 12l4 4 4-4"/>']];
+  var h='<span class="tsep"></span>'+H.map(function(x){ return '<button class="tb'+on(ta===x[0])+'" data-p="ta:'+x[0]+'" title="'+x[1]+'" aria-label="'+x[1]+'" aria-pressed="'+(ta===x[0])+'">'+ico(x[2])+'</button>'; }).join('');
+  if(hasVAlign(it)) h+=V.map(function(x){ return '<button class="tb'+on(va===x[0])+'" data-p="va:'+x[0]+'" title="'+x[1]+'" aria-label="'+x[1]+'" aria-pressed="'+(va===x[0])+'">'+ico(x[2])+'</button>'; }).join('');
+  return h;
+}
 function propAction(a){
   if(a==='cancel'){ ED.tool=null; ED.from=null; drawPage(); drawProps(); return; }
   var p=curPage(), it=findItem(p,ED.sel); if(!it) return; commitEdit(); pushHist();
@@ -1236,6 +1255,8 @@ function propAction(a){
   else if(a==='auto'){ if(it.auto===false){ it.auto=true; delete it.w; delete it.h; } else { var el=$('#page [data-id="'+it.id+'"]'); it.auto=false; it.w=el?el.offsetWidth:160; it.h=el?el.offsetHeight:56; } }
   else if(k[0]==='astyle') it.style=k[1];
   else if(a==='dash'){ if(it.dash) delete it.dash; else it.dash=true; }
+  else if(k[0]==='ta'){ if(k[1]===defTa(it)) delete it.ta; else it.ta=k[1]; }
+  else if(k[0]==='va'){ if(k[1]===defVa(it)) delete it.va; else it.va=k[1]; }
   else if(k[0]==='fs'){ var fv=parseFloat(k[1]); if(fv===1) delete it.fs; else it.fs=fv; }
   else if(k[0]==='font'){ if(k[1]) it.font=k[1]; else delete it.font; }
   else if(k[0]==='width') it.width=k[1];
