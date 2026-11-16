@@ -924,7 +924,7 @@ function viewEdit(id){
    '<button class="tb" data-add="rect" title="Ajouter un rectangle" aria-label="Rectangle">'+ico(I.rect)+'</button><button class="tb" data-add="oval" title="Ajouter un ovale" aria-label="Ovale">'+ico(I.oval)+'</button><button class="tb" data-add="diamond" title="Ajouter un losange" aria-label="Losange">'+ico(I.dia)+'</button><button class="tb" id="tShapes" aria-haspopup="true" title="Formes libres">'+ico('<circle cx="8" cy="8" r="5"/><rect x="12" y="12" width="9" height="9" rx="1"/>')+'Formes'+ico(I.down)+'</button>'+
    '<button class="tb" id="tArrow" title="Relier deux blocs par une flèche" aria-label="Flèche">'+ico(I.arrow)+'</button><button class="tb" data-add="text" title="Ajouter un texte">'+ico(I.text)+'Texte</button>'+
    '<button class="tb" id="tBox" aria-haspopup="true">'+ico(I.box)+'Encadré'+ico(I.down)+'</button><button class="tb" data-add="formula">'+ico(I.fx)+'Formule</button><button class="tb" data-add="table">'+ico(I.table)+'Tableau</button><span class="tsep"></span>'+
-   '<button class="tb" id="tGrid" aria-haspopup="true" title="Afficher un quadrillage">'+ico('<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>')+'Quadrillage'+ico(I.down)+'</button><span class="tsep"></span>'+
+   '<button class="tb" id="tGrid" aria-haspopup="true" title="Afficher un quadrillage">'+ico('<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>')+'Quadrillage'+ico(I.down)+'</button><button class="tb" id="tSnap" aria-pressed="false" title="Caler les éléments sur le quadrillage. Maintiens Alt pour déplacer librement.">'+ico('<path d="M6 3v8a6 6 0 0012 0V3"/><path d="M6 7h4M14 7h4"/>')+'Aimanter</button><span class="tsep"></span>'+
    '<button class="tb" id="tCopy" title="Copier la sélection (Ctrl+C)" aria-label="Copier">'+ico(I.dup)+'</button><button class="tb" id="tPaste" title="Coller (Ctrl+V), aussi dans une autre page ou une autre fiche" aria-label="Coller">'+ico('<rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>')+'</button><span class="tsep"></span>'+
    '<div class="props" id="props"></div><span style="flex:1;min-width:10px"></span><button class="tb" id="tAlign" title="Aligner les blocs proches">'+ico(I.align)+'Aligner</button></div>'+
    '<div class="ebody"><aside class="plan" id="plan" aria-label="Plan du schéma"></aside><div class="stage" id="stage"><div class="pw" id="pw"><div class="page" id="page"></div></div></div></div>'+
@@ -950,6 +950,9 @@ function viewEdit(id){
     document.body.appendChild(m); };
   $('#tCopy').onclick=copySel; $('#tPaste').onclick=pasteClip;
   var gb=$('#tGrid'); gb.classList.toggle('on', !!(GRID.size||GRID.margins));
+  var sb=$('#tSnap'), syncSnap=function(){ sb.classList.toggle('on', !!GRID.snap); sb.setAttribute('aria-pressed', String(!!GRID.snap)); };
+  syncSnap();
+  sb.onclick=function(){ GRID.snap=!GRID.snap; if(GRID.snap && !GRID.size){ GRID.size='5'; } saveGrid(); syncSnap(); gb.classList.toggle('on', !!(GRID.size||GRID.margins)); drawPage(); toast(GRID.snap?'Aimantation activée : les éléments se calent sur le quadrillage (Alt pour déplacer librement).':'Aimantation désactivée : les éléments s\u2019alignent seulement sur les autres formes.'); };
   gb.onclick=function(e){ e.stopPropagation(); closeMenus(); var b=this.getBoundingClientRect(), m=document.createElement('div'); m.className='menu-pop'; m.style.padding='10px';
     var opt=function(v,l){ return '<label style="display:flex;align-items:center;gap:10px;min-height:36px;font-size:14px;cursor:pointer"><input type="radio" name="gsz" value="'+v+'"'+(String(GRID.size||'0')===v?' checked':'')+'>'+l+'</label>'; };
     m.innerHTML='<div class="lab" style="margin-bottom:4px">Quadrillage (à l\u2019écran seulement)</div>'+opt('0','Aucun')+opt('5','Petits carreaux · 5 mm')+opt('10','Grands carreaux · 1 cm')+
@@ -957,7 +960,7 @@ function viewEdit(id){
       '<label style="display:flex;align-items:center;gap:10px;min-height:36px;font-size:14px;cursor:pointer"><input type="checkbox" id="gMar"'+(GRID.margins?' checked':'')+'>Afficher les marges d\u2019impression</label>';
     m.style.left=Math.min(b.left, window.innerWidth-300)+'px'; m.style.top=(b.bottom+6)+'px';
     m.addEventListener('click', function(ev){ ev.stopPropagation(); });
-    m.addEventListener('change', function(){ var r=m.querySelector('input[name=gsz]:checked'); GRID.size=r&&r.value!=='0'?r.value:0; GRID.snap=m.querySelector('#gSnap').checked; GRID.margins=m.querySelector('#gMar').checked; saveGrid(); gb.classList.toggle('on', !!(GRID.size||GRID.margins)); drawPage(); });
+    m.addEventListener('change', function(){ var r=m.querySelector('input[name=gsz]:checked'); GRID.size=r&&r.value!=='0'?r.value:0; GRID.snap=m.querySelector('#gSnap').checked; GRID.margins=m.querySelector('#gMar').checked; saveGrid(); gb.classList.toggle('on', !!(GRID.size||GRID.margins)); syncSnap(); drawPage(); });
     document.body.appendChild(m); };
   var page=$('#page');
   page.addEventListener('pointerdown', onDown);
@@ -1350,18 +1353,18 @@ function onMove(e){
   var d=ED && ED.drag; if(!d) return; var pt=toPage(e), dx=pt.x-d.sx, dy=pt.y-d.sy;
   if(!d.moved && Math.abs(dx)+Math.abs(dy)<4) return;
   if(d.mode==='marquee'){ d.moved=true; var mq=$('#page .marquee'); if(!mq){ mq=document.createElement('div'); mq.className='marquee'; $('#page').appendChild(mq); } d.x1=Math.min(d.sx,pt.x); d.y1=Math.min(d.sy,pt.y); d.x2=Math.max(d.sx,pt.x); d.y2=Math.max(d.sy,pt.y); mq.style.left=d.x1+'px'; mq.style.top=d.y1+'px'; mq.style.width=(d.x2-d.x1)+'px'; mq.style.height=(d.y2-d.y1)+'px'; return; }
-  if(d.mode==='group'){ if(!d.moved){ d.moved=true; pushHist(); } var gq2=GRID.snap?gridPx():0; if(gq2){ dx=Math.round(dx/gq2)*gq2; dy=Math.round(dy/gq2)*gq2; }
+  if(d.mode==='group'){ if(!d.moved){ d.moved=true; pushHist(); } var gq2=(GRID.snap&&!e.altKey)?gridPx():0; if(gq2){ dx=Math.round(dx/gq2)*gq2; dy=Math.round(dy/gq2)*gq2; }
     Object.keys(d.orig).forEach(function(i){ var x=findItem(curPage(),i), xe=$('#page [data-id="'+i+'"]'); if(!x||!xe) return; x.x=Math.round(d.orig[i].x+dx); x.y=Math.round(d.orig[i].y+dy); if(x.gen) x.moved=true; xe.style.left=x.x+'px'; xe.style.top=x.y+'px'; });
     drawArrows($('#page'), ED.f, ED.pi, { interactive:true, sel:ED.sel, multi:ED.multi }); return; }
   var p=curPage(), it=findItem(p,d.id), el=$('#page [data-id="'+d.id+'"]'); if(!it||!el) return;
   if(!d.moved){ d.moved=true; pushHist(); }
   clearGuides();
   if(d.mode==='resize'){
-    if(it.type==='shape'){ var gq3=GRID.snap?gridPx():0, nw2=Math.max(16,d.ow+dx), nh2=Math.max(it.kind==='line'?10:16,d.oh+dy); if(gq3){ nw2=Math.round(nw2/gq3)*gq3; nh2=Math.round(nh2/gq3)*gq3||gq3; } it.w=Math.round(nw2); it.h=Math.round(nh2); el.style.width=it.w+'px'; el.style.height=it.h+'px'; }
+    if(it.type==='shape'){ var gq3=(GRID.snap&&!e.altKey)?gridPx():0, nw2=Math.max(16,d.ow+dx), nh2=Math.max(it.kind==='line'?10:16,d.oh+dy); if(gq3){ nw2=Math.round((it.x+nw2)/gq3)*gq3-it.x; nh2=Math.round((it.y+nh2)/gq3)*gq3-it.y; if(nw2<gq3) nw2=gq3; if(nh2<gq3) nh2=gq3; } else if(!e.altKey){ var se=snapEdges(it.id, it.x+nw2, it.y+nh2); nw2+=se.dx; nh2+=se.dy; se.guides.forEach(addGuide); } it.w=Math.round(nw2); it.h=Math.round(nh2); el.style.width=it.w+'px'; el.style.height=it.h+'px'; }
     else if(it.type==='node'){ it.auto=false; it.w=Math.round(Math.max(70,d.ow+dx*2)); it.h=Math.round(Math.max(36,d.oh+dy*2)); el.classList.remove('auto'); el.style.width=it.w+'px'; el.style.height=it.h+'px'; }
-    else { var gq=GRID.snap?gridPx():0, nw=d.ow+dx; if(gq) nw=Math.round(nw/gq)*gq; it.w=Math.round(clamp(nw,80,PW-it.x-10)); el.style.width=it.w+'px'; }
+    else { var gq=(GRID.snap&&!e.altKey)?gridPx():0, nw=d.ow+dx; if(gq) nw=Math.round((it.x+nw)/gq)*gq-it.x; else if(!e.altKey){ var se2=snapEdges(it.id, it.x+nw, null); nw+=se2.dx; se2.guides.forEach(addGuide); } it.w=Math.round(clamp(nw,40,PW-it.x-4)); el.style.width=it.w+'px'; }
   } else {
-    var nx=d.ox+dx, ny=d.oy+dy, s=snap(it, el, nx, ny), gp=GRID.snap?gridPx():0; if(gp){ s.x=Math.round(nx/gp)*gp; s.y=Math.round(ny/gp)*gp; s.guides=[]; } it.x=Math.round(s.x); it.y=Math.round(s.y); el.style.left=it.x+'px'; el.style.top=it.y+'px'; s.guides.forEach(addGuide);
+    var nx=d.ox+dx, ny=d.oy+dy, s=e.altKey?{x:nx,y:ny,guides:[]}:snap(it, el, nx, ny), gp=(GRID.snap&&!e.altKey)?gridPx():0; if(gp){ if(it.type==='node'){ var hw=el.offsetWidth/2, hh=el.offsetHeight/2; s.x=Math.round((nx-hw)/gp)*gp+hw; s.y=Math.round((ny-hh)/gp)*gp+hh; } else { s.x=Math.round(nx/gp)*gp; s.y=Math.round(ny/gp)*gp; } s.guides=[]; } it.x=Math.round(s.x); it.y=Math.round(s.y); el.style.left=it.x+'px'; el.style.top=it.y+'px'; s.guides.forEach(addGuide);
   }
   if(it.gen) it.moved=true;
   drawArrows($('#page'), ED.f, ED.pi, { interactive:true, sel:ED.sel, multi:ED.multi });
@@ -1390,6 +1393,14 @@ function snap(it, el, nx, ny){
   ys.forEach(function(v,i){ cy.forEach(function(c){ var df=c-v; if(Math.abs(df)<=T && (!by||Math.abs(df)<Math.abs(by.df))) by={df:df,line:c}; }); });
   var g=[]; if(bx){ nx+=bx.df; g.push({v:true,at:bx.line}); } if(by){ ny+=by.df; g.push({v:false,at:by.line}); }
   return { x:nx, y:ny, guides:g };
+}
+function snapEdges(selfId, rx, by){
+  curPage(); var host=$('#page'), xs=[PW/2, M, PW-M], ys=[], T=7;
+  curPage().items.forEach(function(o){ if(o.id===selfId||o.type==='arrow') return; var oe=host.querySelector('[data-id="'+o.id+'"]'); if(!oe) return; var g=geom(o,oe); xs.push(g.cx-g.w/2,g.cx,g.cx+g.w/2); ys.push(g.cy-g.h/2,g.cy,g.cy+g.h/2); });
+  var out={dx:0,dy:0,guides:[]};
+  if(rx!=null){ var bx=null; xs.forEach(function(c){ var df=c-rx; if(Math.abs(df)<=T && (bx===null||Math.abs(df)<Math.abs(bx))) bx=df; }); if(bx!==null){ out.dx=bx; out.guides.push({v:true,at:rx+bx}); } }
+  if(by!=null){ var bb=null; ys.forEach(function(c){ var df=c-by; if(Math.abs(df)<=T && (bb===null||Math.abs(df)<Math.abs(bb))) bb=df; }); if(bb!==null){ out.dy=bb; out.guides.push({v:false,at:by+bb}); } }
+  return out;
 }
 function addGuide(g){ curPage(); var d=document.createElement('div'); d.className='guide'; if(g.v){ d.style.left=g.at+'px'; d.style.top='0'; d.style.width='1px'; d.style.height=PH+'px'; } else { d.style.top=g.at+'px'; d.style.left='0'; d.style.height='1px'; d.style.width=PW+'px'; } $('#page').appendChild(d); }
 function clearGuides(){ $$('#page .guide').forEach(function(g){ g.remove(); }); }
