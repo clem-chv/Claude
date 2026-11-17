@@ -42,6 +42,8 @@ html[data-theme="sombre"] .menu-pop .tgrid button.on{background:#2A3F6E;border-c
 html[data-theme="sombre"] .krow.dup .kbtn,html[data-theme="sombre"] .krow.dup .kn small{color:#FF8A80;border-color:#FF8A80;box-shadow:0 0 0 1px #FF8A80}
 .kwarn{margin:6px 0;padding:8px 10px;border-radius:6px;background:#FEF3F2;border:1px solid #FDA29B;color:#B42318;font-size:13px}
 html[data-theme="sombre"] .kwarn{background:#3A1E1C;border-color:#7A2E28;color:#FFB4AB}
+.kfind{height:36px;padding:0 12px;border:1px solid var(--strong);border-radius:6px;background:var(--input);font-size:14px;color:var(--text);margin-top:4px}
+.krow[hidden],.kgrp[hidden]{display:none}
 .kgrp{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 4px}
 .kgrp:first-child{margin-top:4px}
 .binl{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);white-space:nowrap;cursor:pointer}
@@ -128,6 +130,19 @@ h1,h2,h3{font-family:'Source Serif 4',Georgia,serif;font-weight:600;margin:0;let
 .row input[type=text]{flex:1;min-width:0;height:36px;padding:0 10px;border-radius:6px;border:1px solid var(--strong);background:var(--surface)}
 input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--strong);border-radius:6px;background:var(--surface);flex:none}
 .two{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.optl{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start;margin-top:22px}
+.optl.wprev{grid-template-columns:220px minmax(0,1fr) 300px}
+.optnav{position:sticky;top:76px;display:flex;flex-direction:column;gap:2px;padding-right:12px;border-right:1px solid var(--border)}
+.optnav button{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 12px;border:0;border-radius:6px;background:transparent;font-size:14px;font-weight:500;color:var(--muted);text-align:left}
+.optnav button:hover{background:var(--hover);color:var(--text)}
+.optnav button.on{background:var(--active);color:var(--text);font-weight:600;box-shadow:inset 3px 0 0 var(--ink)}
+.optnav .ico{width:17px;height:17px;flex:none}
+.optbody{min-width:0;display:flex;flex-direction:column;gap:18px}
+.optbody>.panel{max-width:760px}
+.optbody>.panel[hidden],.optprev .panel[hidden]{display:none}
+.optprev{position:sticky;top:76px}
+.optprev[hidden]{display:none}
+@media (max-width:1000px){ .optl,.optl.wprev{grid-template-columns:1fr} .optnav{position:static;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--border);padding:0 0 8px} .optprev{position:static} }
 .two>*{flex:1 1 420px;min-width:0}
 /* library */
 .filters{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:20px}
@@ -1019,23 +1034,48 @@ function viewHome(scrollDesign){
   var q=$('#hq'); q.addEventListener('input', function(){ hs.q=q.value; drawHomeResults(); });
   $$('[data-hue]', v).forEach(function(b){ b.addEventListener('click', function(){ var k=b.getAttribute('data-hue'); hs.ue = (k && hs.ue===k && b.classList.contains('tile'))?'':k; route(true); }); });
 }
+var OPT_SECS=[
+  ['ue','Couleurs des UE','<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/>'],
+  ['boxes','Encadrés','<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>'],
+  ['new','Nouvelles fiches','<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/>'],
+  ['schemas','Schémas','<rect x="2" y="3" width="9" height="5" rx="1"/><rect x="8" y="10" width="9" height="5" rx="1"/><rect x="14" y="17" width="8" height="5" rx="1"/>'],
+  ['keys','Raccourcis clavier','<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'],
+  ['look','Apparence','<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 010 18z" fill="currentColor" stroke="none" opacity=".35"/>'],
+  ['save','Sauvegarde et dossier','<path d="M5 3h11l3 3v15H5zM8 3v6h8M8 21v-7h8v7"/>']
+];
+var OPT_CUR='ue';
+function optLayout(v){
+  var sec=$('#design', v); if(!sec) return; var panels={}; $$('[data-sec]', sec).forEach(function(p){ panels[p.getAttribute('data-sec')]=p; });
+  var lay=document.createElement('div'); lay.className='optl';
+  lay.innerHTML='<nav class="optnav" role="tablist" aria-label="Catégories d’options">'+OPT_SECS.map(function(x){ return '<button type="button" role="tab" data-opt="'+x[0]+'" aria-selected="false"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+x[2]+'</svg>'+x[1]+'</button>'; }).join('')+'</nav><div class="optbody" role="tabpanel"></div><aside class="optprev"></aside>';
+  var body=$('.optbody', lay), prev=$('.optprev', lay);
+  OPT_SECS.forEach(function(x){ if(panels[x[0]]) body.appendChild(panels[x[0]]); });
+  if(panels.prev) prev.appendChild(panels.prev);
+  sec.innerHTML=''; sec.appendChild(lay); sec.style.marginTop='0';
+  var show=function(k){ OPT_CUR=k; OPT_SECS.forEach(function(x){ var p=panels[x[0]]; if(p) p.hidden=x[0]!==k; }); $$('[data-opt]', lay).forEach(function(b){ var on=b.getAttribute('data-opt')===k; b.classList.toggle('on',on); b.setAttribute('aria-selected',String(on)); });
+    var wp=(k==='ue'||k==='boxes'); prev.hidden=!wp; lay.classList.toggle('wprev', wp); };
+  $$('[data-opt]', lay).forEach(function(b){ b.onclick=function(){ show(b.getAttribute('data-opt')); window.scrollTo(0,0); }; });
+  lay.querySelector('.optnav').addEventListener('keydown', function(e){ var bs=$$('[data-opt]', lay), i=bs.indexOf(document.activeElement); if(i<0) return; var j=e.key==='ArrowDown'?i+1:(e.key==='ArrowUp'?i-1:-1); if(j<0||j>=bs.length) return; e.preventDefault(); bs[j].focus(); bs[j].click(); });
+  show(panels[OPT_CUR]?OPT_CUR:'ue');
+}
 function viewSettings(){
   var v=$('#view');
-  var h='<div class="wrap"><div class="ptitle"><div><h1 id="hdes">Personnaliser</h1><p>Les couleurs s’appliquent à toutes les fiches et aux PDF.</p></div></div><section class="sec" id="design" aria-labelledby="hdes" style="margin-top:24px"><div class="two">'+
-    '<div class="panel"><span class="lab">Nom et couleur de chaque UE</span><div>'+UE_KEYS.map(function(k){ var u=ueOf(k); return '<div class="row"><label class="vh" for="uc'+k+'">Couleur '+k+'</label><input type="color" id="uc'+k+'" data-uc="'+k+'" value="'+u.color+'"><b style="width:38px;font-size:14px">'+k+'</b><label class="vh" for="un'+k+'">Nom '+k+'</label><input type="text" id="un'+k+'" data-un="'+k+'" value="'+esc(u.name)+'"></div>'; }).join('')+'</div>'+
-    '<span class="lab" style="margin-top:12px">Encadrés prédéfinis : nom et couleur</span><div>'+Object.keys(BOXK).map(function(k){ return '<div class="row bxrow"><input type="color" data-bc="'+k+'" value="'+S.settings.boxes[k]+'" aria-label="Couleur de l\u2019encadré '+esc(boxLabel(k))+'"><label class="vh" for="bn'+k+'">Nom de l\u2019encadré</label><input type="text" id="bn'+k+'" data-bn="'+k+'" value="'+esc(boxLabel(k))+'" maxlength="40" placeholder="'+esc(BOXK[k])+'"><label class="binl" title="Étiquette sur la même ligne que le texte"><input type="checkbox" data-binl="'+k+'"'+(((S.settings.boxInline||DEF_INLINE)[k])?' checked':'')+'>En ligne</label>'+(keyOf('bx_'+k)?'<span style="font:600 12px ui-monospace,monospace;color:var(--muted);min-width:52px;text-align:right">'+keyOf('bx_'+k)+'</span>':'')+'</div>'; }).join('')+'</div>'+
+  var h='<div class="wrap"><div class="ptitle"><div><h1 id="hdes">Personnaliser</h1><p>Options de l’outil. Les changements sont enregistrés tout de suite.</p></div></div><section class="sec" id="design" aria-labelledby="hdes" style="margin-top:24px"><div class="two">'+
+    '<div class="panel" data-sec="ue"><span class="lab">Nom et couleur de chaque UE</span><div>'+UE_KEYS.map(function(k){ var u=ueOf(k); return '<div class="row"><label class="vh" for="uc'+k+'">Couleur '+k+'</label><input type="color" id="uc'+k+'" data-uc="'+k+'" value="'+u.color+'"><b style="width:38px;font-size:14px">'+k+'</b><label class="vh" for="un'+k+'">Nom '+k+'</label><input type="text" id="un'+k+'" data-un="'+k+'" value="'+esc(u.name)+'"></div>'; }).join('')+'</div>'+
+    '</div><div class="panel" data-sec="boxes"><span class="lab">Encadrés prédéfinis : nom, couleur, étiquette en ligne et raccourci</span><div>'+Object.keys(BOXK).map(function(k){ return '<div class="row bxrow"><input type="color" data-bc="'+k+'" value="'+S.settings.boxes[k]+'" aria-label="Couleur de l\u2019encadré '+esc(boxLabel(k))+'"><label class="vh" for="bn'+k+'">Nom de l\u2019encadré</label><input type="text" id="bn'+k+'" data-bn="'+k+'" value="'+esc(boxLabel(k))+'" maxlength="40" placeholder="'+esc(BOXK[k])+'"><label class="binl" title="Étiquette sur la même ligne que le texte"><input type="checkbox" data-binl="'+k+'"'+(((S.settings.boxInline||DEF_INLINE)[k])?' checked':'')+'>En ligne</label>'+(keyOf('bx_'+k)?'<span style="font:600 12px ui-monospace,monospace;color:var(--muted);min-width:52px;text-align:right">'+keyOf('bx_'+k)+'</span>':'')+'</div>'; }).join('')+'</div>'+
     '<div style="margin-top:8px"><button type="button" class="btn sm" id="resetCol">Revenir aux noms et couleurs d’origine</button></div></div>'+
-    '<div style="display:flex;flex-direction:column;gap:18px"><div class="panel"><span class="lab">Aperçu</span><div id="prev" style="background:#fff;border:1px solid var(--border);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:10px"></div></div>'+
-    '<div class="panel"><span class="lab">Nouvelles fiches</span>'+
+    '<div style="display:flex;flex-direction:column;gap:18px"><div class="panel" data-sec="prev"><span class="lab">Aperçu</span><div id="prev" style="background:#fff;border:1px solid var(--border);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:10px"></div></div>'+
+    '<div class="panel" data-sec="new"><span class="lab">Nouvelles fiches</span>'+
       '<div class="row" style="gap:12px"><span style="font-size:14px;width:170px">Orientation par défaut</span><div class="seg" role="group" aria-label="Orientation par défaut"><button type="button" data-dor="portrait" aria-pressed="'+(S.settings.defOrient==='portrait')+'" class="'+(S.settings.defOrient==='portrait'?'on':'')+'">Portrait</button><button type="button" data-dor="landscape" aria-pressed="'+(S.settings.defOrient!=='portrait')+'" class="'+(S.settings.defOrient!=='portrait'?'on':'')+'">Paysage</button></div></div>'+
       '<div class="row" style="gap:12px"><span style="font-size:14px;width:170px">Couleur du texte par défaut</span><input type="color" id="defTc" value="'+defTc()+'" aria-label="Couleur du texte par défaut"><button type="button" class="btn sm ghost" id="defTcBlack">Noir</button></div>'+
       '<p style="margin:0;font-size:13px;color:var(--muted)">La couleur du texte s’applique à tous les éléments dont tu n’as pas choisi la couleur du texte.</p></div>'+
-    '<div class="panel"><span class="lab">Schémas prédéfinis</span><p style="margin:0;font-size:13px;color:var(--muted)">Insérer › Schémas. Les formes sont groupées : clique le cadre « + » en pointillés pour en ajouter une.</p>'+Object.keys(SCHEMAS).map(function(k){ var c=schCfg(k); return '<div class="row" style="gap:10px"><span style="display:flex;align-items:center;gap:8px;flex:1;font-size:14px">'+schemaIcon(k)+esc(SCHEMAS[k].l)+'</span><label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">Formes<input type="number" min="1" max="12" data-schn="'+k+'" value="'+c.n+'" style="width:56px;height:32px;padding:0 6px;border:1px solid var(--strong);border-radius:6px;background:var(--input)"></label><label class="vh" for="schs'+k+'">Style</label><select id="schs'+k+'" class="psel" data-schs="'+k+'">'+[['fill','Plein'],['soft','Doux'],['outline','Contour']].map(function(o){ return '<option value="'+o[0]+'"'+(c.style===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }).join('')+'</div>'+
-    '<div class="panel"><span class="lab">Raccourcis clavier</span><p style="margin:0;font-size:13px;color:var(--muted)">Clique sur un raccourci puis appuie sur la touche ou la combinaison voulue (ex. Alt+E, Ctrl+Maj+T, F3, ou une lettre seule). Échap pour annuler, Retour arrière pour le retirer. Une lettre seule ne marche pas pendant l’écriture.</p><div id="kList"></div><div><button type="button" class="btn sm" id="kReset">Raccourcis par défaut</button></div></div>'+
-    '<div class="panel"><span class="lab">Apparence de l’outil</span><div class="seg" role="group" aria-label="Apparence" style="align-self:flex-start">'+THEMES.map(function(x){ return '<button type="button" data-uitheme="'+x[0]+'" aria-pressed="false" style="display:inline-flex;align-items:center;gap:6px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'+x[2]+'</svg>'+x[1]+'</button>'; }).join('')+'</div><p style="margin:0;font-size:13px;color:var(--muted)">Les fiches gardent un fond blanc, comme à l’impression et dans les PDF.</p></div>'+
-    '<div class="panel"><span class="lab">Sauvegarde</span><p style="margin:0;font-size:14px;line-height:1.55;color:var(--muted)">'+(Store.mode==='db'?'Tes fiches sont enregistrées dans ton compte et se retrouvent sur tes autres appareils. Tu peux aussi garder une copie sur ton ordinateur.':'Tes fiches sont enregistrées dans ce navigateur, sur cet appareil. Télécharge régulièrement une sauvegarde : elle te protège si les données du navigateur sont effacées, et permet de transférer tes fiches sur un autre appareil avec « Importer ».'+lastBk())+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="bkDl">'+ico(I.dl)+'Télécharger une sauvegarde</button><label class="btn sm" style="cursor:pointer">Importer une sauvegarde<input type="file" id="bkUp" accept=".json,application/json" class="vh"></label></div></div></div>'+
+    '<div class="panel" data-sec="schemas"><span class="lab">Schémas prédéfinis</span><p style="margin:0;font-size:13px;color:var(--muted)">Insérer › Schémas. Les formes sont groupées : clique le cadre « + » en pointillés pour en ajouter une.</p>'+Object.keys(SCHEMAS).map(function(k){ var c=schCfg(k); return '<div class="row" style="gap:10px"><span style="display:flex;align-items:center;gap:8px;flex:1;font-size:14px">'+schemaIcon(k)+esc(SCHEMAS[k].l)+'</span><label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">Formes<input type="number" min="1" max="12" data-schn="'+k+'" value="'+c.n+'" style="width:56px;height:32px;padding:0 6px;border:1px solid var(--strong);border-radius:6px;background:var(--input)"></label><label class="vh" for="schs'+k+'">Style</label><select id="schs'+k+'" class="psel" data-schs="'+k+'">'+[['fill','Plein'],['soft','Doux'],['outline','Contour']].map(function(o){ return '<option value="'+o[0]+'"'+(c.style===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }).join('')+'</div>'+
+    '<div class="panel" data-sec="keys"><span class="lab">Raccourcis clavier</span><p style="margin:0;font-size:13px;color:var(--muted)">Clique sur un raccourci puis appuie sur la touche ou la combinaison voulue (ex. Alt+E, Ctrl+Maj+T, F3, ou une lettre seule). Échap pour annuler, Retour arrière pour le retirer. Une lettre seule ne marche pas pendant l’écriture.</p><input type="search" id="kFind" class="kfind" placeholder="Rechercher une commande ou une touche…" aria-label="Rechercher dans les raccourcis"><div id="kList"></div><div><button type="button" class="btn sm" id="kReset">Raccourcis par défaut</button></div></div>'+
+    '<div class="panel" data-sec="look"><span class="lab">Apparence de l’outil</span><div class="seg" role="group" aria-label="Apparence" style="align-self:flex-start">'+THEMES.map(function(x){ return '<button type="button" data-uitheme="'+x[0]+'" aria-pressed="false" style="display:inline-flex;align-items:center;gap:6px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'+x[2]+'</svg>'+x[1]+'</button>'; }).join('')+'</div><p style="margin:0;font-size:13px;color:var(--muted)">Les fiches gardent un fond blanc, comme à l’impression et dans les PDF.</p></div>'+
+    '<div class="panel" data-sec="save"><span class="lab">Sauvegarde</span><p style="margin:0;font-size:14px;line-height:1.55;color:var(--muted)">'+(Store.mode==='db'?'Tes fiches sont enregistrées dans ton compte et se retrouvent sur tes autres appareils. Tu peux aussi garder une copie sur ton ordinateur.':'Tes fiches sont enregistrées dans ce navigateur, sur cet appareil. Télécharge régulièrement une sauvegarde : elle te protège si les données du navigateur sont effacées, et permet de transférer tes fiches sur un autre appareil avec « Importer ».'+lastBk())+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="bkDl">'+ico(I.dl)+'Télécharger une sauvegarde</button><label class="btn sm" style="cursor:pointer">Importer une sauvegarde<input type="file" id="bkUp" accept=".json,application/json" class="vh"></label></div></div></div>'+
     '</div></section></div>';
   v.innerHTML=h;
+  optLayout(v);
   drawPreview();
   $$('[data-uc]', v).forEach(function(inp){ inp.addEventListener('input', function(){ S.settings.ues[inp.getAttribute('data-uc')].color=inp.value; drawPreview(); }); inp.addEventListener('change', function(){ Store.saveSettings(); }); });
   $$('[data-un]', v).forEach(function(inp){ inp.addEventListener('change', function(){ S.settings.ues[inp.getAttribute('data-un')].name=inp.value.trim()||inp.getAttribute('data-un'); Store.saveSettings(); }); });
@@ -1680,7 +1720,9 @@ function shortcutRows(){
   return h; }
 function bindShortcutPanel(root){
   var box=$('#kList', root); if(!box) return;
-  var redraw=function(){ box.innerHTML=shortcutRows(); bind(); };
+  var fi=$('#kFind', root), filt=function(){ var q=(fi&&fi.value||'').trim().toLowerCase(); var grp=null, any=false; Array.prototype.slice.call(box.children).forEach(function(n){ if(n.classList.contains('kgrp')){ if(grp) grp.hidden=!any; grp=n; any=false; return; } if(!n.classList.contains('krow')) return; var ok=!q || n.textContent.toLowerCase().indexOf(q)>=0; n.hidden=!ok; if(ok) any=true; }); if(grp) grp.hidden=!any; };
+  if(fi) fi.addEventListener('input', filt);
+  var redraw=function(){ box.innerHTML=shortcutRows(); bind(); filt(); };
   var setKeys=function(fn){ var m=clone(keyMap()); fn(m); S.settings.keys=m; Store.saveSettings(); redraw(); };
   var bind=function(){
     $$('[data-kx]', box).forEach(function(b){ b.onclick=function(){ var k=b.getAttribute('data-kx'); setKeys(function(m){ m[k]=''; }); }; });
