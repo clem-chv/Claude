@@ -314,7 +314,11 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .rh::after{content:'';position:absolute;inset:-6px}
 .rh.nw{left:-8px;top:-8px;cursor:nwse-resize}.rh.n{left:calc(50% - 6px);top:-8px;cursor:ns-resize}.rh.ne{right:-8px;top:-8px;cursor:nesw-resize}
 .rh.e{right:-8px;top:calc(50% - 6px);cursor:ew-resize}.rh.se{right:-8px;bottom:-8px;cursor:nwse-resize}.rh.s{left:calc(50% - 6px);bottom:-8px;cursor:ns-resize}
-.rh.sw{left:-8px;bottom:-8px;cursor:nesw-resize}.rh.w{left:-8px;top:calc(50% - 6px);cursor:ew-resize}
+.rh.sw{left:-8px;bottom:-8px;cursor:nesw-resize}
+.rh.rot{left:calc(50% - 9px);top:-34px;width:18px;height:18px;border-radius:50%;cursor:grab;display:flex;align-items:center;justify-content:center;color:#2563EB;padding:0}
+.rh.rot svg{width:11px;height:11px}
+.rh.rot::before{content:'';position:absolute;left:50%;top:100%;width:2px;height:12px;margin-left:-1px;background:#2563EB}
+.rotbadge{position:absolute;z-index:8;padding:2px 7px;border-radius:5px;background:#1A1A18;color:#fff;font:600 12px/1.4 Inter,system-ui,sans-serif;pointer-events:none;transform:translate(-50%,-140%)}.rh.w{left:-8px;top:calc(50% - 6px);cursor:ew-resize}
 .it.over{outline:2px dashed #B42318!important;outline-offset:3px}
 .overmsg{position:absolute;left:48px;right:48px;bottom:6px;z-index:7;background:#FEF3F2;color:#B42318;border:1px solid #FDA29B;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;text-align:center;pointer-events:none}
 .gridov{position:absolute;inset:0;z-index:0;pointer-events:none}
@@ -725,7 +729,7 @@ function buildItem(it, f, opts){
   if(it.rot){ el.style.transform=(it.type==='node'?'translate(-50%,-50%) ':'')+'rotate('+it.rot+'deg)'; if(it.type!=='node') el.style.transformOrigin='50% 50%'; }
   if(opts.multi && opts.multi.indexOf(it.id)>=0) el.className+=' sel';
   if(opts.interactive && it.locked){ var lb=document.createElement('span'); lb.className='lockb'; lb.title='Verrouillé'; lb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>'; el.appendChild(lb); }
-  if(opts.sel===it.id && !editing && !it.locked){ el.className+=' sel'; var dirs=(it.type==='shape'||it.type==='node'||it.type==='table')?['nw','n','ne','e','se','s','sw','w']:['w','e']; dirs.forEach(function(dr){ var hd=document.createElement('div'); hd.className='rh '+dr; hd.setAttribute('data-rh',dr); hd.title=(dr.length===2?'Redimensionner (Maj : garder les proportions)':'Redimensionner'); el.appendChild(hd); }); }
+  if(opts.sel===it.id && !editing && !it.locked){ el.className+=' sel'; var dirs=(it.type==='shape'||it.type==='node'||it.type==='table')?['nw','n','ne','e','se','s','sw','w']:['w','e']; dirs.forEach(function(dr){ var hd=document.createElement('div'); hd.className='rh '+dr; hd.setAttribute('data-rh',dr); hd.title=(dr.length===2?'Redimensionner (Maj : garder les proportions)':'Redimensionner'); el.appendChild(hd); }); if(it.type!=='arrow'){ var rt=document.createElement('div'); rt.className='rh rot'; rt.setAttribute('data-rh','rot'); rt.title='Faire pivoter (Maj : par pas de 15°)'; rt.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M20 12a8 8 0 11-2.3-5.6M20 4v4.5h-4.5"/></svg>'; el.appendChild(rt); } }
   if(editing) el.className+=' editing';
   if(opts.from===it.id) el.className+=' from';
   return el;
@@ -1954,6 +1958,7 @@ function onDown(e){
   ED.multi=[];
   var wasSel=ED.sel===id2;
   var rd=rh?rh.getAttribute('data-rh'):''; if(rd==='1') rd='se';
+  if(rd==='rot'){ var br=itEl.getBoundingClientRect(), cpt=toPage({ clientX:br.left+br.width/2, clientY:br.top+br.height/2 }); ED.multi=[]; ED.drag={ mode:'rotate', id:id2, cx:cpt.x, cy:cpt.y, a0:Math.atan2(pt.y-cpt.y, pt.x-cpt.x), r0:it.rot||0, moved:false, pid:e.pointerId }; try{ page.setPointerCapture(e.pointerId); }catch(er){} return; }
   ED.drag={ mode:rh?'resize':'move', dir:rd, th:it.h, id:id2, sx:pt.x, sy:pt.y, ox:it.x, oy:it.y, ow:itEl.offsetWidth, oh:itEl.offsetHeight, wasSel:wasSel, moved:false, pid:e.pointerId };
   try{ page.setPointerCapture(e.pointerId); }catch(er){}
   if(!wasSel){ ED.sel=id2; drawPage(); drawProps(); }
@@ -1967,6 +1972,10 @@ function onMove(e){
     drawArrows($('#page'), ED.f, ED.pi, { interactive:true, sel:ED.sel, multi:ED.multi }); return; }
   var p=curPage(), it=findItem(p,d.id), el=$('#page [data-id="'+d.id+'"]'); if(!it||!el) return;
   if(!d.moved){ d.moved=true; pushHist(); }
+  if(d.mode==='rotate'){ var ang=d.r0+(Math.atan2(pt.y-d.cy, pt.x-d.cx)-d.a0)*180/Math.PI; ang=e.shiftKey?Math.round(ang/15)*15:Math.round(ang); ang=((ang%360)+360)%360; if(!e.shiftKey){ [0,90,180,270,360].forEach(function(q){ if(Math.abs(ang-q)<=3) ang=q%360; }); } var shown=ang; if(ang>180) ang-=360; if(ang) it.rot=ang; else delete it.rot; if(it.gen) it.custom=true;
+    el.style.transform=(it.type==='node'?'translate(-50%,-50%) ':'')+(it.rot?'rotate('+it.rot+'deg)':''); if(it.type!=='node') el.style.transformOrigin='50% 50%';
+    var bd=$('#page .rotbadge'); if(!bd){ bd=document.createElement('div'); bd.className='rotbadge'; $('#page').appendChild(bd); } bd.style.left=d.cx+'px'; bd.style.top=(d.cy-(el.offsetHeight/2)-18)+'px'; bd.textContent=shown+'°';
+    drawArrows($('#page'), ED.f, ED.pi, { interactive:true, sel:ED.sel, multi:ED.multi }); return; }
   clearGuides();
   if(d.mode==='resize'){
     var dir=d.dir||'se', rdx=dx, rdy=dy;
@@ -2014,7 +2023,8 @@ function onUp(e){
     curPage().items.forEach(function(x){ if(x.type==='arrow' && got.indexOf(x.from)>=0 && got.indexOf(x.to)>=0 && got.indexOf(x.id)<0) got.push(x.id); });
     setSelList(got); return; }
   if(d.mode==='group'){ if(d.moved){ touch(); drawPage(); } else if(d.gid && d.wasGroup){ ED.multi=[]; ED.sel=d.gid; drawPage(); drawProps(); } return; }
-  if(d.moved){ touch(); drawPage(); if(d.mode==='resize') drawProps(); }
+  var rb=$('#page .rotbadge'); if(rb) rb.remove();
+  if(d.moved){ touch(); drawPage(); if(d.mode==='resize'||d.mode==='rotate') drawProps(); }
   else if(d.wasSel && d.mode==='move'){ var it=findItem(curPage(),d.id); if(it && it.type!=='arrow') startEdit(d.id); }
 }
 function snap(it, el, nx, ny){
