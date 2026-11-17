@@ -399,7 +399,6 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 <nav class="nav" aria-label="Menu principal">
 <a href="#accueil" data-nav="accueil">Accueil</a>
 <a href="#fiches" data-nav="fiches">Mes fiches</a>
-<button type="button" id="ueMenuBtn" aria-haspopup="true">Par UE <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
 <a href="#exporter" data-nav="exporter">Exporter</a>
 <a href="#personnaliser" data-nav="personnaliser">Personnaliser</a>
 </nav>
@@ -981,7 +980,7 @@ window.addEventListener('hashchange', function(){ route(); });
 /* ---------------- top menu ---------------- */
 var IN_OVF=false;
 function closeMenus(){ $$('.menu-pop').forEach(function(m){ if(IN_OVF && m.classList.contains('ovf')) return; m.remove(); }); }
-$('#ueMenuBtn').addEventListener('click', function(e){
+if($('#ueMenuBtn')) $('#ueMenuBtn').addEventListener('click', function(e){
   e.stopPropagation(); if($('.menu-pop')){ closeMenus(); return; }
   var b=this.getBoundingClientRect(), m=document.createElement('div'); m.className='menu-pop'; m.setAttribute('role','menu');
   m.innerHTML=UE_KEYS.map(function(k){ var u=ueOf(k); return '<button role="menuitem" data-ue="'+k+'"><span class="dot" style="background:'+u.color+'"></span><span><b>'+k+'</b> · '+esc(u.name)+'</span></button>'; }).join('');
