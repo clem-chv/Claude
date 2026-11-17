@@ -277,6 +277,14 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .page .ph.small{flex-direction:row;align-items:center;gap:10px;padding-bottom:10px}
 .page .ph.small b{font-size:14px}
 .page .ph.small span.su{margin-left:auto;font-size:12px;color:#4B5563}
+.page .ph .crumb{font-size:12.5px;font-weight:600;letter-spacing:.01em;margin-top:-2px}
+.page .ph.small span.su.crumb{font-weight:600;margin-top:0}
+.page.ed .ph{cursor:pointer}
+.page.ed .ph:hover{outline:1px dashed #93A4C3;outline-offset:6px}
+.hdrpop{width:380px;padding:14px}
+.hdrpop label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.hdrpop label.f input{height:34px;padding:0 10px;border:1px solid var(--strong);border-radius:6px;background:var(--input);font-size:14px;color:var(--text)}
+.hdrpop label.c{display:flex;align-items:center;gap:8px;font-size:13.5px;min-height:30px;cursor:pointer}
 .page .pf{position:absolute;left:48px;right:48px;bottom:28px;display:flex;justify-content:space-between;font-size:11px;color:#4B5563;padding-top:8px;border-top:1px solid #E5E7EB}
 .page svg.ar{position:absolute;left:0;top:0;z-index:1;pointer-events:none;overflow:visible}
 .page svg.ar .hit{pointer-events:stroke;cursor:pointer}
@@ -418,6 +426,7 @@ var I = {
   left:'<path d="M15 18l-6-6 6-6"/>', right:'<path d="M9 18l6-6-6-6"/>', fx:'<path d="M9 4h-2a2 2 0 00-2 2v14M3 11h6M13 10l7 8M20 10l-7 8"/>'
 };
 var BOXK = { retenir:'À retenir', definition:'Définition', important:'Important', piege:'Piège', exemple:'Exemple', methode:'Méthode', remarque:'Remarque', article:'Articles et références' };
+function crumbOf(f, p){ var v=(p && typeof p.crumb==='string')?p.crumb:(f.crumb||''); return String(v).trim().replace(/\s*>\s*/g,' › '); }
 function boxLabel(k){ var n=S && S.settings && S.settings.boxNames && S.settings.boxNames[k]; return (n && String(n).trim()) || BOXK[k] || 'Encadré'; }
 var DEF_INLINE={ definition:true };
 function boxInline(it){ if(it.lblInline===true||it.lblInline===false) return it.lblInline; var m=(S && S.settings && S.settings.boxInline) || DEF_INLINE; return !!m[it.kind]; }
@@ -757,15 +766,16 @@ function buildItem(it, f, opts){
 }
 function renderPage(container, f, pi, opts){
   opts=opts||{}; var page=f.pages[pi], c=ueColor(f.ue), ue=ueOf(f.ue), n=f.pages.length;
-  useDims(page); container.innerHTML=''; container.className='page'; container.style.width=PW+'px'; container.style.height=PH+'px'; container.style.background=page.bg||'#FFFFFF';
+  useDims(page); container.innerHTML=''; container.className='page'+(opts.interactive?' ed':''); container.style.width=PW+'px'; container.style.height=PH+'px'; container.style.background=page.bg||'#FFFFFF';
   if(page.border && page.border.w){ var pb=document.createElement('div'); pb.className='pborder'; var ins=Math.round(M*0.42); pb.style.inset=ins+'px'; pb.style.border=page.border.w+'px '+(page.border.st||'solid')+' '+(page.border.c||'#1A1A18'); container.appendChild(pb); }
   var h=document.createElement('div');
   if(pi===0){
     h.className='ph'; h.style.borderBottom='2px solid '+c;
-    h.innerHTML='<div class="r1"><span class="pill" style="background:'+c+';color:'+onColor(c)+'">'+esc(f.ue)+'</span><span>'+esc(ue.name)+(f.theme?' · '+esc(f.theme):'')+'</span><span class="dt">mise à jour le '+new Date(f.updated||Date.now()).toLocaleDateString('fr-FR')+'</span></div><h1>'+esc(f.title||'Sans titre')+'</h1>';
+    var hd=f.hdr||{}, cr=crumbOf(f,page), ueTxt=[hd.noUe?'':ue.name, f.theme||''].filter(Boolean).join(' · ');
+    h.innerHTML='<div class="r1"><span class="pill" style="background:'+c+';color:'+onColor(c)+'">'+esc(f.ue)+'</span><span>'+esc(ueTxt)+'</span>'+(hd.noDate?'':'<span class="dt">mise à jour le '+new Date(f.updated||Date.now()).toLocaleDateString('fr-FR')+'</span>')+'</div><h1>'+esc(f.title||'Sans titre')+'</h1>'+(cr?'<div class="crumb" style="color:'+ink(c)+'">'+esc(cr)+'</div>':'');
   } else {
     h.className='ph small'; h.style.borderBottom='2px solid '+c;
-    h.innerHTML='<span class="pill" style="background:'+c+';color:'+onColor(c)+'">'+esc(f.ue)+'</span><b>'+esc(f.title||'Sans titre')+'</b><span class="su">suite</span>';
+    h.innerHTML='<span class="pill" style="background:'+c+';color:'+onColor(c)+'">'+esc(f.ue)+'</span><b>'+esc(f.title||'Sans titre')+'</b>'+(crumbOf(f,page)?'<span class="su crumb" style="color:'+ink(c)+'">'+esc(crumbOf(f,page))+'</span>':'<span class="su">suite</span>');
   }
   h.style.left=M+'px'; h.style.right=M+'px'; h.style.top=Math.round(M*0.83)+'px'; var h1e=h.querySelector('h1'); if(h1e) h1e.style.fontSize=H1+'px'; if(M<30){ h.style.gap='4px'; h.style.paddingBottom='8px'; }
   container.appendChild(h);
@@ -1147,6 +1157,8 @@ function viewEdit(id){
     if(lk || ((e.ctrlKey||e.metaKey) && fi && fi.link && !ED.editing)){ e.stopPropagation(); e.preventDefault(); goToPage(lk?lk.getAttribute('data-goto'):fi.link.pid); } }, true);
   page.addEventListener('pointerdown', function(e){ var g=e.target.closest('.schg'), mi=e.target.closest('.schm'); if(g||mi){ e.stopPropagation(); e.preventDefault(); if(g) addSchemaStep(); else removeSchemaStep(); } }, true);
   page.addEventListener('pointerdown', onDown);
+  page.addEventListener('pointerdown', function(e){ var ph=e.target.closest('.ph'); if(!ph) return; var now=Date.now(); if(ED.lastPh && now-ED.lastPh<450){ ED.lastPh=0; e.stopPropagation(); e.preventDefault(); ED.phOpen=ph; } else ED.lastPh=now; }, true);
+  document.addEventListener('click', function(){ if(ED && ED.phOpen){ var ph=ED.phOpen; ED.phOpen=null; setTimeout(function(){ openHeaderPop(ph); }, 0); } });
   page.addEventListener('pointermove', onMove);
   page.addEventListener('pointerup', onUp);
   page.addEventListener('pointercancel', onUp);
@@ -1520,6 +1532,30 @@ function openSchemaMenu(btn){
   m.onclick=function(ev){ var t=ev.target.closest('[data-sch]'); if(t){ closeMenus(); insertSchema(t.getAttribute('data-sch')); } };
   placePop(m, btn, 300);
 }
+function openHeaderPop(btn){
+  if(!ED) return; commitEdit(); closeMenus(); var f=ED.f, p=curPage(), hd=f.hdr||{}, own=typeof p.crumb==='string';
+  var m=document.createElement('div'); m.className='menu-pop hdrpop'; m.setAttribute('role','dialog'); m.setAttribute('aria-label','En-tête de la fiche');
+  m.innerHTML='<div class="lab" style="margin-bottom:10px">En-tête · page '+(ED.pi+1)+'</div>'+
+    '<label class="f">Titre de la fiche<input id="hdT" type="text" value="'+esc(f.title||'')+'"></label>'+
+    '<label class="f">Thème ou chapitre (à côté du nom de l’UE)<input id="hdTh" type="text" value="'+esc(f.theme||'')+'"></label>'+
+    '<label class="f">Où on en est dans le plan<input id="hdC" type="text" value="'+esc(own?p.crumb:(f.crumb||''))+'" placeholder="ex. Partie 2 > Chapitre 1 > Section A"></label>'+
+    '<label class="c"><input type="checkbox" id="hdAll"'+(own?'':' checked')+'>Le même sur toutes les pages de la fiche</label>'+
+    '<div style="border-top:1px solid var(--border);margin:8px 0"></div>'+
+    '<label class="c"><input type="checkbox" id="hdUe"'+(hd.noUe?'':' checked')+'>Afficher le nom de l’UE</label>'+
+    '<label class="c"><input type="checkbox" id="hdD"'+(hd.noDate?'':' checked')+'>Afficher la date de mise à jour</label>'+
+    '<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Astuce : écris « > » entre les niveaux, il devient « › ». Double-clic sur l’en-tête pour rouvrir ce panneau.</p>';
+  var snap=false, sv=function(){ if(!snap){ pushHist(); snap=true; } };
+  var apply=function(){ sv(); f.title=m.querySelector('#hdT').value; f.theme=m.querySelector('#hdTh').value; var cv=m.querySelector('#hdC').value, all=m.querySelector('#hdAll').checked;
+    if(all){ f.crumb=cv; f.pages.forEach(function(x){ delete x.crumb; }); } else { p.crumb=cv; }
+    f.hdr={}; if(!m.querySelector('#hdUe').checked) f.hdr.noUe=true; if(!m.querySelector('#hdD').checked) f.hdr.noDate=true; if(!Object.keys(f.hdr).length) delete f.hdr;
+    var et=$('#eTitle'); if(et) et.value=f.title; var eth=$('#eTheme'); if(eth) eth.value=f.theme||''; touch(); drawPage(); };
+  m.addEventListener('input', apply); m.addEventListener('change', apply);
+  m.addEventListener('click', function(e){ e.stopPropagation(); });
+  m.addEventListener('keydown', function(e){ e.stopPropagation(); if(e.key==='Escape') closeMenus(); });
+  if(btn && btn.classList && btn.classList.contains('ph')){ var r=btn.getBoundingClientRect(); m.style.left=Math.max(8,Math.min(r.left, window.innerWidth-400))+'px'; m.style.top=(r.bottom+8)+'px'; document.body.appendChild(m); }
+  else placePop(m, btn, 390);
+  var ci=m.querySelector('#hdC'); ci.focus(); ci.select();
+}
 function openBoxMenu(btn){ var b=btn.getBoundingClientRect(); closeMenus(); var m=document.createElement('div'); m.className='menu-pop'; m.innerHTML=Object.keys(BOXK).map(function(k){ var kb=keyOf('bx_'+k); return '<button data-k="'+k+'"><span class="dot" style="background:'+S.settings.boxes[k]+'"></span>'+esc(boxLabel(k))+(kb?'<span style="margin-left:auto;font-size:12px;color:var(--muted)">'+kb+'</span>':'')+'</button>'; }).join(''); m.style.left=Math.min(b.left,window.innerWidth-290)+'px'; m.style.top=(b.bottom+6)+'px'; m.onclick=function(ev){ var t=ev.target.closest('[data-k]'); if(t){ closeMenus(); addItem('box', t.getAttribute('data-k')); } }; document.body.appendChild(m); }
 function toggleSnap(){ GRID.snap=!GRID.snap; if(GRID.snap && !GRID.size){ GRID.size='5'; } saveGrid(); refreshCmdStates(); drawPage(); toast(GRID.snap?'Aimantation activée : les éléments se calent sur le quadrillage (Alt pour déplacer librement).':'Aimantation désactivée : les éléments s’alignent seulement sur les autres formes.'); }
 function openGridMenu(btn){ closeMenus(); var b=btn.getBoundingClientRect(), m=document.createElement('div'); m.className='menu-pop'; m.style.padding='10px';
@@ -1549,6 +1585,7 @@ var CMDS={
   selall:{tab:'edit', l:'Tout sélectionner', i:'<path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><rect x="8" y="8" width="8" height="8" rx="1"/>', t:'Tout sélectionner (Ctrl+A)', run:function(){ commitEdit(); setSelList(curPage().items.map(function(x){ return x.id; })); }},
   align:{tab:'edit', l:'Aligner les blocs', i:'<path d="M4 3v18M8 7h12M8 12h7M8 17h10"/>', t:'Aligne automatiquement les blocs proches', run:function(){ autoAlign(); }},
   plan:{tab:'edit', l:'Plan', i:'<path d="M4 6h16M8 12h12M8 18h12M4 12h.01M4 18h.01"/>', t:'Afficher ou masquer le plan (schéma écrit en liste)', run:function(){ ED.planOpen=!ED.planOpen; drawPlan(); fitPage(); }, on:function(){ return !!ED.planOpen; }},
+  header:{tab:'page', l:'En-tête', i:'<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9h18M7 6.5h6"/>', menu:true, t:'Modifier l\u2019en-tête : titre, thème, où on en est dans le plan (double-clic sur l\u2019en-tête)', run:function(b){ openHeaderPop(b); }},
   addpage:{tab:'page', l:'Nouvelle page', i:'<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/>', run:function(){ var b=$('#pgAdd'); if(b) b.click(); }},
   portrait:{tab:'page', l:'Portrait', i:'<rect x="7" y="3" width="10" height="18" rx="1.5"/>', run:function(){ setOrient([ED.pi],'portrait'); }, on:function(){ return !isLand(curPage()); }},
   landscape:{tab:'page', l:'Paysage', i:'<rect x="3" y="7" width="18" height="10" rx="1.5"/>', run:function(){ setOrient([ED.pi],'landscape'); }, on:function(){ return isLand(curPage()); }},
