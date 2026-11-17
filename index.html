@@ -26,6 +26,14 @@ html[data-theme="sombre"] .toast{background:#ECECE8;color:#17181A}
 .kbtn.rec{border-color:var(--focus);box-shadow:0 0 0 2px var(--focus);font-family:Inter,system-ui,sans-serif;font-weight:500}
 .kclr{width:30px;height:30px;border:0;background:transparent;border-radius:6px;font-size:18px;color:var(--muted);flex:none}
 .kclr:hover{background:var(--active);color:var(--text)}
+.krow.dup .kbtn{border-color:#D92D20;color:#D92D20;box-shadow:0 0 0 1px #D92D20}
+.krow.dup .kn small{color:#D92D20}
+.krow.warn .kn small{color:#B54708}
+.krow .kn>span{display:flex;flex-direction:column;min-width:0}
+.krow .kn small{font-size:12px;line-height:1.3}
+html[data-theme="sombre"] .krow.dup .kbtn,html[data-theme="sombre"] .krow.dup .kn small{color:#FF8A80;border-color:#FF8A80;box-shadow:0 0 0 1px #FF8A80}
+.kwarn{margin:6px 0;padding:8px 10px;border-radius:6px;background:#FEF3F2;border:1px solid #FDA29B;color:#B42318;font-size:13px}
+html[data-theme="sombre"] .kwarn{background:#3A1E1C;border-color:#7A2E28;color:#FFB4AB}
 .kgrp{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 4px}
 .kgrp:first-child{margin-top:4px}
 .bxrow input[type=text]{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:6px;border:1px solid var(--strong);background:var(--input);font-size:14px}
@@ -969,7 +977,7 @@ function viewSettings(){
       '<div class="row" style="gap:12px"><span style="font-size:14px;width:170px">Orientation par défaut</span><div class="seg" role="group" aria-label="Orientation par défaut"><button type="button" data-dor="portrait" aria-pressed="'+(S.settings.defOrient==='portrait')+'" class="'+(S.settings.defOrient==='portrait'?'on':'')+'">Portrait</button><button type="button" data-dor="landscape" aria-pressed="'+(S.settings.defOrient!=='portrait')+'" class="'+(S.settings.defOrient!=='portrait'?'on':'')+'">Paysage</button></div></div>'+
       '<div class="row" style="gap:12px"><span style="font-size:14px;width:170px">Couleur du texte par défaut</span><input type="color" id="defTc" value="'+defTc()+'" aria-label="Couleur du texte par défaut"><button type="button" class="btn sm ghost" id="defTcBlack">Noir</button></div>'+
       '<p style="margin:0;font-size:13px;color:var(--muted)">La couleur du texte s’applique à tous les éléments dont tu n’as pas choisi la couleur du texte.</p></div>'+
-    '<div class="panel"><span class="lab">Raccourcis clavier</span><p style="margin:0;font-size:13px;color:var(--muted)">Clique sur un raccourci puis appuie sur la combinaison voulue (Alt ou Ctrl + une lettre). Échap pour annuler, Retour arrière pour le retirer.</p><div id="kList"></div><div><button type="button" class="btn sm" id="kReset">Raccourcis par défaut</button></div></div>'+
+    '<div class="panel"><span class="lab">Raccourcis clavier</span><p style="margin:0;font-size:13px;color:var(--muted)">Clique sur un raccourci puis appuie sur la touche ou la combinaison voulue (ex. Alt+E, Ctrl+Maj+T, F3, ou une lettre seule). Échap pour annuler, Retour arrière pour le retirer. Une lettre seule ne marche pas pendant l’écriture.</p><div id="kList"></div><div><button type="button" class="btn sm" id="kReset">Raccourcis par défaut</button></div></div>'+
     '<div class="panel"><span class="lab">Apparence de l’outil</span><div class="seg" role="group" aria-label="Apparence" style="align-self:flex-start">'+THEMES.map(function(x){ return '<button type="button" data-uitheme="'+x[0]+'" aria-pressed="false" style="display:inline-flex;align-items:center;gap:6px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'+x[2]+'</svg>'+x[1]+'</button>'; }).join('')+'</div><p style="margin:0;font-size:13px;color:var(--muted)">Les fiches gardent un fond blanc, comme à l’impression et dans les PDF.</p></div>'+
     '<div class="panel"><span class="lab">Sauvegarde</span><p style="margin:0;font-size:14px;line-height:1.55;color:var(--muted)">'+(Store.mode==='db'?'Tes fiches sont enregistrées dans ton compte et se retrouvent sur tes autres appareils. Tu peux aussi garder une copie sur ton ordinateur.':'Tes fiches sont enregistrées dans ce navigateur, sur cet appareil. Télécharge régulièrement une sauvegarde : elle te protège si les données du navigateur sont effacées, et permet de transférer tes fiches sur un autre appareil avec « Importer ».'+lastBk())+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="bkDl">'+ico(I.dl)+'Télécharger une sauvegarde</button><label class="btn sm" style="cursor:pointer">Importer une sauvegarde<input type="file" id="bkUp" accept=".json,application/json" class="vh"></label></div></div></div>'+
     '</div></section></div>';
@@ -1416,6 +1424,36 @@ var CMDS={
   zin:{tab:'view', l:'Zoomer', i:'<circle cx="11" cy="11" r="7"/><path d="M8 11h6M11 8v6M20 20l-4-4"/>', icon:true, t:'Zoomer (Ctrl +)', run:function(){ setZoom(0.1); }}
 };
 Object.keys(BOXK).forEach(function(k){ CMDS['bx_'+k]={ tab:'boxes', l:function(){ return boxLabel(k); }, dot:k, run:function(){ addItem('box', k); } }; });
+
+/* commandes de mise en forme, accessibles par raccourci (pas de bouton fixe dans les onglets) */
+(function(){
+  var needSel=function(fn){ return function(){ if(!ED || !(ED.sel || (ED.multi && ED.multi.length>1))){ toast('Sélectionne d’abord un élément.'); return; } fn(); }; };
+  var exec=function(c){ return function(){ if(ED && ED.editing){ document.execCommand(c, false, null); if(typeof syncFmtState==='function') syncFmtState(); } else toast('Ce raccourci s’utilise pendant l’écriture (F2 pour écrire dans l’élément).'); }; };
+  var X={
+    f_bold:['Gras', '<path d="M7 5h6a3.5 3.5 0 010 7H7zM7 12h7a3.5 3.5 0 010 7H7z"/>', exec('bold')],
+    f_italic:['Italique', '<path d="M10 5h8M6 19h8M14 5l-4 14"/>', exec('italic')],
+    f_underline:['Souligné', '<path d="M7 4v7a5 5 0 0010 0V4M5 20h14"/>', exec('underline')],
+    f_bullets:['Liste à puces', '<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>', exec('insertUnorderedList')],
+    f_left:['Texte à gauche', '<path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>', needSel(function(){ propAction('ta:left'); })],
+    f_center:['Texte centré', '<path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>', needSel(function(){ propAction('ta:center'); })],
+    f_right:['Texte à droite', '<path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>', needSel(function(){ propAction('ta:right'); })],
+    f_grow:['Agrandir la police', '<path d="M4 18l5-12 5 12M6 14h6M17 9h4M19 7v4"/>', needSel(function(){ propAction('grow'); })],
+    f_shrink:['Réduire la police', '<path d="M4 18l5-12 5 12M6 14h6M17 9h4"/>', needSel(function(){ propAction('shrink'); })],
+    f_fill:['Style plein', '<rect x="4" y="6" width="16" height="12" rx="2" fill="currentColor"/>', needSel(function(){ propAction('style:fill'); })],
+    f_outline:['Style contour', '<rect x="4" y="6" width="16" height="12" rx="2"/>', needSel(function(){ propAction('style:outline'); })],
+    f_color:['Couleur de l’élément', '<circle cx="12" cy="12" r="8"/>', needSel(function(){ var b=$('#props [data-color]')||$('#rBody'); openColorPop(b,'color'); })],
+    f_tcolor:['Couleur du texte', '<path d="M6 16l6-12 6 12M8 12h8M4 20h16"/>', needSel(function(){ var b=$('#props [data-tcolor]')||$('#rBody'); openColorPop(b,'textColor'); })],
+    f_link:['Lien vers une page', '<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>', needSel(function(){ if(ED.multi.length>1){ toast('Sélectionne un seul élément pour le lier.'); return; } openLinkPop($('#props [data-link]')||$('#rBody')); })],
+    f_dup:['Dupliquer', '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>', needSel(function(){ copySel(); pasteClip(); })],
+    f_del:['Supprimer', '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', needSel(function(){ delSel(); })],
+    f_group:['Grouper', '<rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>', needSel(function(){ groupSel(true); })],
+    f_ungroup:['Dissocier', '<rect x="3" y="3" width="8" height="8" rx="1" stroke-dasharray="2 2"/><rect x="13" y="13" width="8" height="8" rx="1" stroke-dasharray="2 2"/>', needSel(function(){ groupSel(false); })],
+    f_front:['Premier plan', '<rect x="9" y="9" width="12" height="12" rx="1"/><path d="M3 15V3h12"/>', needSel(function(){ zOrder(true); })],
+    f_back:['Arrière-plan', '<rect x="3" y="3" width="12" height="12" rx="1"/><path d="M21 9v12H9"/>', needSel(function(){ zOrder(false); })],
+    save:['Enregistrer', '<path d="M5 3h11l3 3v15H5zM8 3v6h8M8 21v-7h8v7"/>', function(){ saveNow(); }]
+  };
+  Object.keys(X).forEach(function(k){ CMDS[k]={ tab:k==='save'?'edit':'fmtk', l:X[k][0], i:X[k][1], run:X[k][2], hidden:true }; });
+})();
 var CMD_ORDER=Object.keys(CMDS);
 function cmdLabel(k){ var l=CMDS[k].l; return typeof l==='function'?l():l; }
 function cmdIcon(k){ var c=CMDS[k]; return c.dot?'<span class="dot" style="background:'+(S.settings.boxes[c.dot]||'#888')+'"></span>':ico(c.i); }
@@ -1427,24 +1465,42 @@ function cmdBtn(k){ var c=CMDS[k], on=c.on?!!c.on():false, lab=esc(cmdLabel(k)),
 
 /* ---------------- raccourcis clavier ---------------- */
 var DEFAULT_KEYS={ bx_retenir:'Alt+R', bx_definition:'Alt+E', bx_important:'Alt+I', bx_piege:'Alt+P', bx_exemple:'Alt+X', bx_methode:'Alt+M', bx_remarque:'Alt+N', bx_article:'Alt+A', text:'Alt+T', arrow:'Alt+F', table:'Alt+B' };
-var RESERVED_KEYS=['Ctrl+C','Ctrl+V','Ctrl+X','Ctrl+Z','Ctrl+Y','Ctrl+A','Ctrl+S','Ctrl+D','Ctrl+B','Ctrl+I','Ctrl+U','Ctrl+P','Ctrl+0','Ctrl+Maj+Z','F2','F5','F11','F12','Alt+F4','Ctrl+W','Ctrl+R','Ctrl+T','Ctrl+N'];
+var BUILTIN_KEYS={ 'Ctrl+C':'Copier', 'Ctrl+V':'Coller', 'Ctrl+X':'Couper (pendant l’écriture)', 'Ctrl+Z':'Annuler', 'Ctrl+Y':'Rétablir', 'Ctrl+Maj+Z':'Rétablir', 'Ctrl+A':'Tout sélectionner', 'Ctrl+S':'Enregistrer', 'Ctrl+D':'Dupliquer', 'Ctrl+B':'Gras (pendant l’écriture)', 'Ctrl+I':'Italique (pendant l’écriture)', 'Ctrl+U':'Souligné (pendant l’écriture)', 'Ctrl+0':'Ajuster le zoom', 'F2':'Écrire dans l’élément', 'Ctrl+P':'Imprimer', 'F5':'Recharger la page', 'F11':'Plein écran', 'F12':'Outils de développement' };
 function keyMap(){ var m=S.settings.keys; return (m && typeof m==='object')?m:DEFAULT_KEYS; }
 function keyOf(cmd){ var v=keyMap()[cmd]; return (v && CMDS[cmd])?v:''; }
+var CODE_NAMES={ Minus:'-', Equal:'=', Comma:',', Period:'.', Slash:'/', Semicolon:';', Quote:'\'', BracketLeft:'[', BracketRight:']', Backslash:'\\', Backquote:'²', IntlBackslash:'<', Space:'Espace', Insert:'Inser', Home:'Début', End:'Fin', PageUp:'PgPréc', PageDown:'PgSuiv', NumpadAdd:'Pavé +', NumpadSubtract:'Pavé −', NumpadMultiply:'Pavé *', NumpadDivide:'Pavé /' };
 function comboOf(e){
-  var k=null; if(/^Key[A-Z]$/.test(e.code||'')) k=e.code.slice(3); else if(/^Digit\d$/.test(e.code||'')) k=e.code.slice(5); else if(/^F([1-9]|1[0-2])$/.test(e.key||'')) k=e.key;
+  var c=e.code||'', k=null;
+  if(/^Key[A-Z]$/.test(c)) k=c.slice(3); else if(/^Digit\d$/.test(c)) k=c.slice(5); else if(/^Numpad\d$/.test(c)) k='Pavé '+c.slice(6);
+  else if(/^F([1-9]|1[0-2])$/.test(e.key||'')) k=e.key; else if(CODE_NAMES[c]) k=CODE_NAMES[c];
   if(!k) return null; var mod=e.ctrlKey||e.metaKey;
-  if(!mod && !e.altKey && k[0]!=='F') return null; if(k[0]==='F' && k.length>1 && !mod && !e.altKey && e.shiftKey) return null;
   return (mod?'Ctrl+':'')+(e.altKey?'Alt+':'')+(e.shiftKey?'Maj+':'')+k; }
-function cmdForCombo(c){ var m=keyMap(); for(var k in m){ if(m[k]===c && CMDS[k] && !CMDS[k].menu) return k; } return null; }
-function runShortcut(e){
-  var c=comboOf(e); if(!c) return false; if(e.ctrlKey && e.altKey && !e.metaKey) return false; /* AltGr */
-  var k=cmdForCombo(c); if(!k) return false;
-  e.preventDefault(); e.stopPropagation(); if(ED.editing) commitEdit(); closeMenus(); CMDS[k].run(null, e); refreshCmdStates(); return true; }
+function cmdsForCombo(c){ var m=keyMap(), out=[]; CMD_ORDER.forEach(function(k){ if(m[k]===c) out.push(k); }); return out; }
+function anchorFor(k){ var b=$('#rBody [data-cmd="'+k+'"]')||$('.menu-pop.ovf [data-cmd="'+k+'"]'); if(b) return b; var r=($('#rBody')||document.body).getBoundingClientRect(); return { getBoundingClientRect:function(){ return { left:r.left+14, right:r.left+60, top:r.top, bottom:r.bottom, width:46, height:r.height }; } }; }
+function runShortcut(e, editing){
+  var c=comboOf(e); if(!c) return false;
+  if(e.ctrlKey && e.altKey && !e.metaKey) return false; /* AltGr : caractères spéciaux */
+  if(editing && !(e.ctrlKey||e.metaKey||e.altKey) && !/^F\d/.test(c)) return false; /* en écrivant, les touches simples tapent du texte */
+  var ks=cmdsForCombo(c); if(!ks.length) return false;
+  var k=ks[0]; e.preventDefault(); e.stopPropagation();
+  if(ks.length>1) toast(c+' est en double ('+ks.map(cmdLabel).join(', ')+') : « '+cmdLabel(k)+' » est utilisé. Corrige-le dans Personnaliser.');
+  var keepEdit=/^f_(bold|italic|underline|bullets)$/.test(k);
+  if(editing && !keepEdit) commitEdit();
+  if(!keepEdit) closeMenus();
+  CMDS[k].run(CMDS[k].menu?anchorFor(k):null, e); refreshCmdStates(); return true; }
 function shortcutRows(){
-  var ks=CMD_ORDER.filter(function(k){ return !CMDS[k].menu; }), tabs={}; RTABS.forEach(function(t){ tabs[t[0]]=t[1]; });
-  var h='', last=null;
-  ks.forEach(function(k){ var g=CMDS[k].tab; if(g!==last){ h+='<div class="kgrp">'+esc(tabs[g]||'')+'</div>'; last=g; }
-    var v=keyOf(k); h+='<div class="krow"><span class="kn">'+cmdIcon(k)+esc(cmdLabel(k))+'</span><button type="button" class="kbtn'+(v?'':' none')+'" data-kc="'+k+'" aria-label="Raccourci pour '+esc(cmdLabel(k))+' : '+(v||'aucun')+'. Cliquer pour le changer">'+(v?esc(v):'Aucun')+'</button>'+(v?'<button type="button" class="kclr" data-kx="'+k+'" aria-label="Retirer le raccourci de '+esc(cmdLabel(k))+'" title="Retirer">×</button>':'<span class="kclr"></span>')+'</div>'; });
+  var tabs={ fmtk:'Mise en forme de l’élément sélectionné' }; RTABS.forEach(function(t){ tabs[t[0]]=t[1]; });
+  var order=RTABS.map(function(t){ return t[0]; }).concat(['fmtk']).filter(function(t){ return t!=='home' && t!=='format'; });
+  var m=keyMap(), count={}; CMD_ORDER.forEach(function(k){ var v=m[k]; if(v) count[v]=(count[v]||0)+1; });
+  var dups=Object.keys(count).filter(function(v){ return count[v]>1; }).length, h='';
+  if(dups) h+='<div class="kwarn" role="alert">'+dups+' raccourci'+(dups>1?'s':'')+' en double : les lignes en rouge utilisent la même combinaison.</div>';
+  order.forEach(function(g){ var ks=CMD_ORDER.filter(function(k){ return CMDS[k].tab===g; }); if(!ks.length) return;
+    h+='<div class="kgrp">'+esc(tabs[g]||'')+'</div>';
+    ks.forEach(function(k){ var v=keyOf(k), dup=v && count[v]>1, bi=v && BUILTIN_KEYS[v], note='';
+      if(dup) note='En double avec : '+CMD_ORDER.filter(function(x){ return x!==k && m[x]===v; }).map(cmdLabel).join(', ');
+      else if(bi) note='Remplace le raccourci de l’outil : '+bi;
+      h+='<div class="krow'+(dup?' dup':(bi?' warn':''))+'"><span class="kn">'+cmdIcon(k)+'<span>'+esc(cmdLabel(k))+(note?'<small>'+esc(note)+'</small>':'')+'</span></span><button type="button" class="kbtn'+(v?'':' none')+'" data-kc="'+k+'" aria-label="Raccourci pour '+esc(cmdLabel(k))+' : '+(v||'aucun')+(note?'. '+esc(note):'')+'. Cliquer pour le changer">'+(v?esc(v):'Aucun')+'</button>'+(v?'<button type="button" class="kclr" data-kx="'+k+'" aria-label="Retirer le raccourci de '+esc(cmdLabel(k))+'" title="Retirer">×</button>':'<span class="kclr"></span>')+'</div>'; });
+  });
   return h; }
 function bindShortcutPanel(root){
   var box=$('#kList', root); if(!box) return;
@@ -1458,11 +1514,11 @@ function bindShortcutPanel(root){
         if(e.key==='Escape'){ redraw(); return; }
         if(e.key==='Backspace'||e.key==='Delete'){ setKeys(function(m){ m[k]=''; }); return; }
         var c=comboOf(e);
-        if(!c){ toast('Utilise Alt ou Ctrl avec une lettre ou un chiffre (ex. Alt+E), ou une touche F1 à F12.'); redraw(); return; }
-        if(RESERVED_KEYS.indexOf(c)>=0){ toast(c+' est déjà utilisé par l’outil (copier, coller, gras…). Choisis une autre combinaison.'); redraw(); return; }
-        var other=cmdForCombo(c);
-        setKeys(function(m){ Object.keys(m).forEach(function(x){ if(m[x]===c) m[x]=''; }); m[k]=c; });
-        if(other && other!==k) toast(c+' était utilisé pour « '+cmdLabel(other)+' » : il est maintenant pour « '+cmdLabel(k)+' ».');
+        if(!c){ toast('Cette touche ne peut pas servir de raccourci. Essaie une lettre, un chiffre ou F1 à F12, seule ou avec Ctrl, Alt ou Maj.'); redraw(); return; }
+        var others=cmdsForCombo(c).filter(function(x){ return x!==k; });
+        setKeys(function(m){ m[k]=c; });
+        if(others.length) toast(c+' est aussi utilisé pour « '+others.map(cmdLabel).join(', ')+' » : les deux lignes sont en rouge.');
+        else if(BUILTIN_KEYS[c]) toast(c+' remplacera « '+BUILTIN_KEYS[c]+' » de l\u2019outil.');
       };
       window.addEventListener('keydown', on, true);
       b.onblur=function(){ setTimeout(function(){ if(b.classList.contains('rec')){ window.removeEventListener('keydown', on, true); redraw(); } }, 150); };
@@ -1480,7 +1536,7 @@ function renderRibbon(){
   if(ED.tab==='format'){ body.innerHTML='<div class="props" id="props"></div>'; return; }
   var h;
   if(ED.tab==='home'){ var fv=favList(); h=(fv.length?cmdRow(fv):'<span class="hint" style="font-size:12px;color:var(--muted);padding:0 6px">Aucun favori pour l’instant.</span>')+'<span class="tsep"></span><button class="tb" id="favCfg" aria-haspopup="true" aria-label="Personnaliser l’onglet Accueil" title="Choisir les boutons de l’onglet Accueil">'+ico('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>')+ico(I.down)+'</button>'; }
-  else h=cmdRow(CMD_ORDER.filter(function(k){ return CMDS[k].tab===ED.tab; }));
+  else h=cmdRow(CMD_ORDER.filter(function(k){ return CMDS[k].tab===ED.tab && !CMDS[k].hidden; }));
   body.innerHTML=h;
   $$('[data-cmd]',body).forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); var k=b.getAttribute('data-cmd'); if(!CMDS[k].menu) closeMenus(); CMDS[k].run(b,e); refreshCmdStates(); }; });
   var fc=$('#favCfg'); if(fc) fc.onclick=function(e){ e.stopPropagation(); openFavCfg(this); };
@@ -1497,7 +1553,7 @@ function ribbonCtx(){
 function openFavCfg(btn){
   closeMenus(); var b=btn.getBoundingClientRect(), m=document.createElement('div'); m.className='menu-pop favcfg'; m.setAttribute('role','dialog'); m.setAttribute('aria-label','Personnaliser l’accueil');
   var fv=favList(), h='<div class="lab">Boutons affichés dans l’onglet Accueil</div>';
-  RTABS.forEach(function(t){ var ks=CMD_ORDER.filter(function(k){ return CMDS[k].tab===t[0]; }); if(!ks.length) return;
+  RTABS.forEach(function(t){ var ks=CMD_ORDER.filter(function(k){ return CMDS[k].tab===t[0] && !CMDS[k].hidden; }); if(!ks.length) return;
     h+='<div class="fg">'+t[1]+'</div>'+ks.map(function(k){ return '<label><input type="checkbox" data-fav="'+k+'"'+(fv.indexOf(k)>=0?' checked':'')+'>'+cmdIcon(k)+esc(cmdLabel(k))+'</label>'; }).join(''); });
   h+='<div class="crow" style="display:flex;gap:6px;margin-top:12px"><button type="button" id="favReset" style="border:1px solid var(--strong);justify-content:center">Par défaut</button><button type="button" id="favNone" style="border:1px solid var(--strong);justify-content:center">Tout décocher</button></div>';
   m.innerHTML=h; m.style.left=Math.max(8,Math.min(b.left, window.innerWidth-340))+'px'; m.style.top=(b.bottom+6)+'px';
@@ -1948,10 +2004,10 @@ function syncPlanText(it){
 document.addEventListener('keydown', function(e){
   if(!ED || curRoute().name!=='edit') return;
   if((e.ctrlKey||e.metaKey) && (e.key==='s'||e.key==='S')){ e.preventDefault(); saveNow(); return; }
-  if(ED.editing){ if((e.ctrlKey||e.metaKey) && /^[biu]$/i.test(e.key)) setTimeout(syncFmtState, 0); if(e.key==='Escape'){ e.preventDefault(); commitEdit(); return; } if(e.altKey && !e.ctrlKey) runShortcut(e); return; }
+  if(ED.editing){ if((e.ctrlKey||e.metaKey) && /^[biu]$/i.test(e.key)) setTimeout(syncFmtState, 0); if(e.key==='Escape'){ e.preventDefault(); commitEdit(); return; } runShortcut(e, true); return; }
   var tg=e.target, typing=tg && (tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'||tg.tagName==='SELECT'||tg.isContentEditable);
   if(typing) return;
-  if(runShortcut(e)) return;
+  if(runShortcut(e, false)) return;
   var mod=e.ctrlKey||e.metaKey;
   if(mod && (e.key==='z'||e.key==='Z')){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); return; }
   if(mod && (e.key==='y'||e.key==='Y')){ e.preventDefault(); redo(); return; }
