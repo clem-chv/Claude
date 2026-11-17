@@ -319,6 +319,10 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .it.nb .t,.it.nb .bt,.it.nb .sti,.it.nb td{font-weight:400}
 .it.fi .t,.it.fi .bt,.it.fi .sti,.it.fi td{font-style:italic}
 .it.fu .t,.it.fu .bt,.it.fu .sti,.it.fu td{text-decoration:underline}
+.szb{position:absolute;z-index:7;pointer-events:none;transform:translateX(-50%);padding:2px 8px;border-radius:5px;background:#2563EB;color:#fff;font:600 11px/1.5 Inter,system-ui,sans-serif;white-space:nowrap}
+.szin{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted);padding:0 4px}
+.szin input{width:58px;height:30px;padding:0 6px;border:1px solid var(--strong);border-radius:6px;background:var(--input);font-size:13px;color:var(--text)}
+.szin input:disabled{opacity:.6}
 .gapl{position:absolute;z-index:6;pointer-events:none;background:#E5487D}
 .gapl.h{height:1px}.gapl.v{width:1px}
 .gapl.h::before,.gapl.h::after{content:'';position:absolute;top:-4px;width:1px;height:9px;background:inherit}.gapl.h::before{left:0}.gapl.h::after{right:0}
@@ -1309,6 +1313,7 @@ function drawProps0(){
     if(it.h) h+='<button class="tb" data-p="tblauto" title="Revenir à une hauteur qui suit le contenu">Hauteur auto</button>';
     h+='<button class="tb" data-p="row+">+ Ligne</button><button class="tb" data-p="row-">− Ligne</button><button class="tb" data-p="col+">+ Colonne</button><button class="tb" data-p="col-">− Colonne</button><button class="tb'+on(it.header)+'" data-p="header">En-tête</button>';
   }
+  h+=sizeInputs(it);
   h+=alignButtons(it);
   if(hasText(it)) h+=fontControls(curPt(it), it.font||'')+wholeBtns([it]);
   h+='<span class="tsep"></span><button class="tb" data-color="1" aria-haspopup="true" title="Couleur de l\u2019élément"><span class="sw" style="background:'+curColor(it)+'"></span>'+(it.type==='text'?'Couleur':(it.type==='shape'?'Couleur':'Fond'))+ico(I.down)+'</button>'+(it.type!=='arrow' && !(it.type==='shape' && (it.kind==='line'||it.kind==='brace'))?'<button class="tb" data-tcolor="1" aria-haspopup="true" title="Couleur du texte"><span style="font-weight:800;font-size:15px;line-height:1;border-bottom:3px solid '+curText(it)+';padding:0 2px">A</span>Texte'+ico(I.down)+'</button>':'');
@@ -1328,6 +1333,7 @@ function bindProps(){
     li.addEventListener('change', function(){ if(snap0) touch(); });
     li.addEventListener('keydown', function(e){ if(e.key==='Enter'){ li.blur(); } e.stopPropagation(); }); }
   var tb=$('#props [data-tcolor]'); if(tb) tb.onclick=function(e){ e.stopPropagation(); openColorPop(tb,'textColor'); };
+  $$('#props [data-sz]').forEach(function(inp){ var go=function(){ var it0=findItem(curPage(),ED.sel); if(it0) applySize(it0, inp.getAttribute('data-sz'), inp.value); }; inp.onchange=go; inp.onkeydown=function(e){ e.stopPropagation(); if(e.key==='Enter'){ e.preventDefault(); go(); } }; });
   var lb=$('#props [data-link]'); if(lb) lb.onclick=function(e){ e.stopPropagation(); openLinkPop(lb); };
   var bk=$('#props [data-boxkind]'); if(bk) bk.onclick=function(e){ e.stopPropagation(); closeMenus(); var m=document.createElement('div'); m.className='menu-pop'; m.setAttribute('role','menu'); var it0=findItem(curPage(),ED.sel);
     m.innerHTML=Object.keys(BOXK).map(function(k){ return '<button role="menuitem" data-k="'+k+'"'+(it0&&it0.kind===k?' style="background:var(--active)"':'')+'><span class="dot" style="background:'+S.settings.boxes[k]+'"></span>'+esc(boxLabel(k))+'</button>'; }).join('');
@@ -2138,7 +2144,7 @@ function onMove(e){
   }
   if(it.gen) it.moved=true;
   drawArrows($('#page'), ED.f, ED.pi, { interactive:true, sel:ED.sel, multi:ED.multi });
-  drawGaps(d.id);
+  drawGaps(d.id); drawSize(d.id);
 }
 function onUp(e){
   var d=ED && ED.drag; if(!d) return; ED.drag=null; clearGuides();
@@ -2200,8 +2206,27 @@ function drawGaps(id){
     host.appendChild(ln); host.appendChild(tg); };
   put(best.l,true,eqH); put(best.r,true,eqH); put(best.t,false,eqV); put(best.b,false,eqV);
 }
+function mmOf(px){ var v=px/MM; return Math.round(v*2)/2; }
+function mmLab(px){ return String(mmOf(px)).replace('.',',')+' mm'; }
+function clearSize(){ $$('#page .szb').forEach(function(x){ x.remove(); }); }
+function drawSize(id){
+  clearSize(); if(!ED) return; var host=$('#page'), it=findItem(curPage(),id); if(!it || it.type==='arrow') return;
+  var el=host.querySelector('[data-id="'+id+'"]'); if(!el) return; var B=boxOf(it, el), r=el.getBoundingClientRect(), pr=host.getBoundingClientRect(), bot=(r.bottom-pr.top)/ED.scale;
+  var b=document.createElement('div'); b.className='szb'; b.textContent='L '+mmLab(el.offsetWidth)+'  ×  l '+mmLab(el.offsetHeight);
+  b.style.left=((B.l+B.r)/2)+'px'; b.style.top=(Math.max(bot,B.b)+12)+'px'; host.appendChild(b);
+}
+function sizeInputs(it){
+  var el=$('#page [data-id="'+it.id+'"]'); if(!el || it.type==='arrow') return '';
+  var hOk=(it.type==='shape'||it.type==='node'||it.type==='table');
+  return '<span class="tsep"></span><span class="szin" title="Taille en millimètres (L = horizontal, l = vertical)"><label for="szW">L</label><input id="szW" type="number" step="0.5" min="3" data-sz="w" value="'+mmOf(el.offsetWidth)+'"><label for="szH">l</label><input id="szH" type="number" step="0.5" min="3" data-sz="h" value="'+mmOf(el.offsetHeight)+'"'+(hOk?'':' disabled title="La hauteur suit le texte"')+'>mm</span>'; }
+function applySize(it, k, mm){
+  var px=Math.round(clamp(parseFloat(String(mm).replace(',','.'))||0, 3, 1200)*MM); if(!px) return; commitEdit(); pushHist();
+  if(it.type==='node'){ var el=$('#page [data-id="'+it.id+'"]'); if(it.auto!==false && el){ it.w=el.offsetWidth; it.h=el.offsetHeight; } it.auto=false; }
+  if(k==='w'){ it.w=px; } else { it.h=px; }
+  if(it.gen) it.custom=true; touch(); drawPage(); drawProps(); }
 function afterDraw(){
   if(!ED) return;
+  clearSize(); if(ED.sel && !ED.editing && (!ED.multi || ED.multi.length<2)) drawSize(ED.sel);
   if(ED.sel && !ED.editing && !(ED.drag && ED.drag.moved) && (!ED.multi || ED.multi.length<2)) drawGaps(ED.sel);
   drawSchemaCtl();
 }
