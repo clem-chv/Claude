@@ -44,6 +44,7 @@ html[data-theme="sombre"] .krow.dup .kbtn,html[data-theme="sombre"] .krow.dup .k
 html[data-theme="sombre"] .kwarn{background:#3A1E1C;border-color:#7A2E28;color:#FFB4AB}
 .kgrp{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 4px}
 .kgrp:first-child{margin-top:4px}
+.binl{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);white-space:nowrap;cursor:pointer}
 .bxrow input[type=text]{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:6px;border:1px solid var(--strong);background:var(--input);font-size:14px}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -292,6 +293,8 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .node [data-edit]{white-space:pre-wrap;outline:none;min-width:20px}
 .box{border-radius:12px;padding:12px 14px}
 .box .lbl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.box.inl .lbl{float:left;margin:0 10px 0 0;line-height:calc(14.5px * var(--fs,1) * 1.5)}
+.box.inl .lbl::after{content:'';display:inline-block;width:1px;height:1.1em;background:currentColor;opacity:.45;margin-left:10px;vertical-align:-2px}
 .box .bt{font-size:calc(14.5px * var(--fs,1));line-height:1.5;color:var(--tc,#000);min-height:20px;outline:none}
 .box .bt.raw,.txt .bt.raw,.formula .bt.raw{white-space:pre-wrap}
 .txt .bt{outline:none;color:inherit;min-height:20px}
@@ -393,6 +396,8 @@ var I = {
 };
 var BOXK = { retenir:'À retenir', definition:'Définition', important:'Important', piege:'Piège', exemple:'Exemple', methode:'Méthode', remarque:'Remarque', article:'Articles et références' };
 function boxLabel(k){ var n=S && S.settings && S.settings.boxNames && S.settings.boxNames[k]; return (n && String(n).trim()) || BOXK[k] || 'Encadré'; }
+var DEF_INLINE={ definition:true };
+function boxInline(it){ if(it.lblInline===true||it.lblInline===false) return it.lblInline; var m=(S && S.settings && S.settings.boxInline) || DEF_INLINE; return !!m[it.kind]; }
 function defTc(){ var c=S && S.settings && S.settings.textColor; return /^#[0-9a-fA-F]{6}$/.test(c||'')?c:'#000000'; }
 var DEFAULT_SETTINGS = {
   ver:2,
@@ -521,6 +526,7 @@ function mergeSettings(v){
   if(/^(clair|gris|sombre)$/.test(v.uiTheme||'')) s.uiTheme=v.uiTheme;
   if(/^#[0-9a-fA-F]{6}$/.test(v.textColor||'')) s.textColor=v.textColor;
   if(v.defOrient==='portrait'||v.defOrient==='landscape') s.defOrient=v.defOrient;
+  if(v.boxInline && typeof v.boxInline==='object'){ s.boxInline={}; Object.keys(BOXK).forEach(function(k){ if(v.boxInline[k]) s.boxInline[k]=true; }); }
   if(v.boxNames && typeof v.boxNames==='object'){ s.boxNames={}; Object.keys(BOXK).forEach(function(k){ if(typeof v.boxNames[k]==='string' && v.boxNames[k].trim()) s.boxNames[k]=v.boxNames[k].trim().slice(0,40); }); }
   if(v.keys && typeof v.keys==='object'){ s.keys={}; Object.keys(v.keys).forEach(function(k){ if(typeof v.keys[k]==='string' && v.keys[k].length<30) s.keys[k]=v.keys[k]; }); }
   if(Array.isArray(v.favs)) s.favs=v.favs.filter(function(k){ return typeof k==='string'; }).slice(0,40);
@@ -668,7 +674,7 @@ function buildItem(it, f, opts){
     else { var lines=String(it.text||'').split('\n'); var h='<div class="t">'+esc(lines[0]||' ')+'</div>'; if(lines.length>1) h+='<div class="s">'+esc(lines.slice(1).join('\n')).replace(/\n/g,'<br>')+'</div>'; el.innerHTML+=h; }
   } else if(it.type==='box'){
     var bc=it.color||S.settings.boxes[it.kind]||'#888888';
-    el.className+=' box'; el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.width=(it.w||340)+'px';
+    el.className+=' box'+(boxInline(it)?' inl':''); el.style.left=it.x+'px'; el.style.top=it.y+'px'; el.style.width=(it.w||340)+'px';
     el.style.background=mixWhite(bc,0.10); el.style.border='1px solid '+mixWhite(bc,0.55);
     el.innerHTML='<div class="lbl" style="color:'+ink(bc)+'">'+esc(boxLabel(it.kind))+'</div>'+'<div class="bt"'+(editing?' data-edit contenteditable="true" data-rich="1"':'')+'>'+bodyHtml(it)+'</div>';
     if(it.textColor) el.querySelector('.bt').style.color=it.textColor;
@@ -982,7 +988,7 @@ function viewSettings(){
   var v=$('#view');
   var h='<div class="wrap"><div class="ptitle"><div><h1 id="hdes">Personnaliser</h1><p>Les couleurs s’appliquent à toutes les fiches et aux PDF.</p></div></div><section class="sec" id="design" aria-labelledby="hdes" style="margin-top:24px"><div class="two">'+
     '<div class="panel"><span class="lab">Nom et couleur de chaque UE</span><div>'+UE_KEYS.map(function(k){ var u=ueOf(k); return '<div class="row"><label class="vh" for="uc'+k+'">Couleur '+k+'</label><input type="color" id="uc'+k+'" data-uc="'+k+'" value="'+u.color+'"><b style="width:38px;font-size:14px">'+k+'</b><label class="vh" for="un'+k+'">Nom '+k+'</label><input type="text" id="un'+k+'" data-un="'+k+'" value="'+esc(u.name)+'"></div>'; }).join('')+'</div>'+
-    '<span class="lab" style="margin-top:12px">Encadrés prédéfinis : nom et couleur</span><div>'+Object.keys(BOXK).map(function(k){ return '<div class="row bxrow"><input type="color" data-bc="'+k+'" value="'+S.settings.boxes[k]+'" aria-label="Couleur de l\u2019encadré '+esc(boxLabel(k))+'"><label class="vh" for="bn'+k+'">Nom de l\u2019encadré</label><input type="text" id="bn'+k+'" data-bn="'+k+'" value="'+esc(boxLabel(k))+'" maxlength="40" placeholder="'+esc(BOXK[k])+'">'+(keyOf('bx_'+k)?'<span style="font:600 12px ui-monospace,monospace;color:var(--muted);min-width:52px;text-align:right">'+keyOf('bx_'+k)+'</span>':'')+'</div>'; }).join('')+'</div>'+
+    '<span class="lab" style="margin-top:12px">Encadrés prédéfinis : nom et couleur</span><div>'+Object.keys(BOXK).map(function(k){ return '<div class="row bxrow"><input type="color" data-bc="'+k+'" value="'+S.settings.boxes[k]+'" aria-label="Couleur de l\u2019encadré '+esc(boxLabel(k))+'"><label class="vh" for="bn'+k+'">Nom de l\u2019encadré</label><input type="text" id="bn'+k+'" data-bn="'+k+'" value="'+esc(boxLabel(k))+'" maxlength="40" placeholder="'+esc(BOXK[k])+'"><label class="binl" title="Étiquette sur la même ligne que le texte"><input type="checkbox" data-binl="'+k+'"'+(((S.settings.boxInline||DEF_INLINE)[k])?' checked':'')+'>En ligne</label>'+(keyOf('bx_'+k)?'<span style="font:600 12px ui-monospace,monospace;color:var(--muted);min-width:52px;text-align:right">'+keyOf('bx_'+k)+'</span>':'')+'</div>'; }).join('')+'</div>'+
     '<div style="margin-top:8px"><button type="button" class="btn sm" id="resetCol">Revenir aux noms et couleurs d’origine</button></div></div>'+
     '<div style="display:flex;flex-direction:column;gap:18px"><div class="panel"><span class="lab">Aperçu</span><div id="prev" style="background:#fff;border:1px solid var(--border);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:10px"></div></div>'+
     '<div class="panel"><span class="lab">Nouvelles fiches</span>'+
@@ -1002,6 +1008,7 @@ function viewSettings(){
   $$('[data-dor]', v).forEach(function(b){ b.onclick=function(){ S.settings.defOrient=b.getAttribute('data-dor'); Store.saveSettings(); $$('[data-dor]', v).forEach(function(x){ var on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); }); toast('Les nouvelles fiches seront en '+(S.settings.defOrient==='portrait'?'portrait.':'paysage.')); }; });
   var dtc=$('#defTc', v); dtc.addEventListener('input', function(){ S.settings.textColor=dtc.value; applyTheme(); drawPreview(); }); dtc.addEventListener('change', function(){ Store.saveSettings(); });
   $('#defTcBlack').onclick=function(){ dtc.value='#000000'; if(dtc.__sync) dtc.__sync(); S.settings.textColor='#000000'; applyTheme(); drawPreview(); Store.saveSettings(); };
+  $$('[data-binl]', v).forEach(function(cb){ cb.onchange=function(){ var m=clone(S.settings.boxInline||DEF_INLINE); var k=cb.getAttribute('data-binl'); if(cb.checked) m[k]=true; else delete m[k]; S.settings.boxInline=m; Store.saveSettings(); drawPreview(); }; });
   bindShortcutPanel(v);
   upgradeColorInputs(v);
   $('#resetCol').onclick=function(){ var d=clone(DEFAULT_SETTINGS); UE_KEYS.forEach(function(k){ S.settings.ues[k].color=d.ues[k].color; }); S.settings.boxes=d.boxes; delete S.settings.boxNames; S.settings.textColor='#000000'; Store.saveSettings(); applyTheme(); route(true); };
@@ -1023,7 +1030,7 @@ function drawPreview(){
   var el=$('#prev'); if(!el) return; var k=S.home.ue||'UE4', u=ueOf(k), c=u.color;
   el.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:2px solid '+c+'"><span class="pill" style="background:'+c+';color:'+onColor(c)+'">'+k+'</span><span style="font-size:12px;color:#5E5E58">'+esc(u.name)+'</span></div>'+
    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:6px 0"><span style="padding:8px 14px;border-radius:8px;background:'+c+';color:'+onColor(c)+';font-weight:700;font-size:13px">Notion</span><span style="padding:8px 16px;border-radius:99px;border:2px solid '+c+';color:'+ink(c)+';font-weight:700;font-size:13px">Idée</span><span style="padding:8px 14px;border-radius:8px;background:'+mixWhite(c,.16)+';border:1px solid '+mixWhite(c,.5)+';color:'+ink(c)+';font-weight:700;font-size:13px">Détail</span></div>'+
-   Object.keys(BOXK).map(function(b){ var bc=S.settings.boxes[b]; return '<div style="padding:8px 10px;border-radius:8px;background:'+mixWhite(bc,.10)+';border:1px solid '+mixWhite(bc,.55)+'"><div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:'+ink(bc)+'">'+esc(boxLabel(b))+'</div><div style="font-size:12.5px;margin-top:2px;color:'+defTc()+'">Exemple de contenu.</div></div>'; }).join('');
+   Object.keys(BOXK).map(function(b){ var bc=S.settings.boxes[b]; return '<div style="padding:8px 10px;border-radius:8px;background:'+mixWhite(bc,.10)+';border:1px solid '+mixWhite(bc,.55)+'"><div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:'+ink(bc)+';'+(((S.settings.boxInline||DEF_INLINE)[b])?'float:left;margin-right:8px;line-height:18px':'')+'">'+esc(boxLabel(b))+'</div><div style="font-size:12.5px;margin-top:2px;line-height:18px;color:'+defTc()+'">Exemple de contenu.</div></div>'; }).join('');
 }
 
 /* ---------------- LIBRARY ---------------- */
@@ -1264,6 +1271,7 @@ function drawProps0(){
     h+='<button class="tb'+on(it.style==='straight')+'" data-p="astyle:straight">Droite</button><button class="tb'+on((it.style||'curve')==='curve')+'" data-p="astyle:curve">Courbe</button><button class="tb'+on(it.style==='dashed')+'" data-p="astyle:dashed">Pointillés</button><button class="tb" data-p="flip">Inverser</button>';
   } else if(it.type==='box'){
     h+='<button class="tb" data-boxkind="1" aria-haspopup="true" title="Type d\u2019encadré"><span class="dot" style="background:'+(S.settings.boxes[it.kind]||'#888')+'"></span>'+esc(boxLabel(it.kind))+ico(I.down)+'</button>';
+    h+='<button class="tb'+on(boxInline(it))+'" data-p="lblinl" aria-pressed="'+boxInline(it)+'" title="Mettre l\u2019étiquette (ex. DÉFINITION) sur la même ligne que le début du texte">'+ico('<path d="M3 12h5M11 12h10M3 6h18M3 18h12"/>')+'Étiquette en ligne</button>';
   } else if(it.type==='text'){
     h+='<button class="tb'+on(it.size==='title')+'" data-p="size:title">Titre</button><button class="tb'+on(it.size==='h2')+'" data-p="size:h2">Sous-titre</button><button class="tb'+on((it.size||'body')==='body')+'" data-p="size:body">Texte</button>';
   } else if(it.type==='shape'){
@@ -1815,6 +1823,7 @@ function propAction(a){
   else if(a==='row+'){ it.rows.push(it.rows[0].map(function(){ return ''; })); }
   else if(a==='row-'){ if(it.rows.length>1) it.rows.pop(); }
   else if(a==='tblauto'){ delete it.h; }
+  else if(a==='lblinl'){ var nv=!boxInline(it); var dm=(S.settings.boxInline||DEF_INLINE)[it.kind]; if(!!dm===nv) delete it.lblInline; else it.lblInline=nv; }
   else if(a==='col+'){ it.rows.forEach(function(r){ r.push(''); }); }
   else if(a==='col-'){ if(it.rows[0].length>1) it.rows.forEach(function(r){ r.pop(); }); }
   else if(a==='header') it.header=!it.header;
