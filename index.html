@@ -282,7 +282,11 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .strip .lab2{font-size:12px;color:var(--muted);white-space:nowrap;margin-right:4px}
 .hintpage{position:absolute;left:48px;right:48px;top:240px;z-index:0;border:1px dashed #CFCFC9;border-radius:8px;padding:28px;color:#5E5E58;font-size:15px;line-height:1.6;text-align:center;pointer-events:none}
 /* reader */
-.rhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px}
+.rhead{position:sticky;top:58px;z-index:40;display:flex;flex-wrap:nowrap;gap:10px;align-items:center;margin:0 calc(-1 * clamp(16px,2.4vw,40px)) 22px;padding:12px clamp(16px,2.4vw,40px);background:var(--bg);border-bottom:1px solid var(--border)}
+.rhead h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rpg{display:inline-flex;align-items:center;gap:2px;font-size:13px;color:var(--muted);white-space:nowrap}
+.rpg b{color:var(--text);font-weight:600;min-width:46px;text-align:center}
+.pw{scroll-margin-top:136px}
 .rhead h1{font-size:26px;flex:1 1 260px}
 .pages{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:24px}
 .rbg{background:var(--stage);border-radius:8px;padding:28px 20px}
@@ -1015,7 +1019,7 @@ function curRoute(){
 var lastRoute='';
 function route(keepScroll){
   var r=curRoute(); var key=r.name+(r.id||'');
-  closeMenus();
+  closeMenus(); READ_NAV=null; window.onscroll=null;
   $$('.nav [data-nav]').forEach(function(a){ var n=a.getAttribute('data-nav'); var on= n===r.name || (n==='fiches' && (r.name==='lire'||r.name==='edit')); a.classList.toggle('on', on); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
   if(ED && r.name!=='edit'){ commitEdit(); var lid=ED.fid; if(Store.timers[lid]){ clearTimeout(Store.timers[lid]); delete Store.timers[lid]; Store.flush(lid); } ED=null; }
   var y=window.scrollY;
@@ -1233,21 +1237,36 @@ function drawLibGrid(){
 }
 
 /* ---------------- READ ---------------- */
+var READ_NAV=null;
+document.addEventListener('keydown', function(e){
+  if(!READ_NAV || !/^#lire-/.test(location.hash)) return; var ae=document.activeElement; if(ae && (ae.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) return;
+  var c=comboOf(e), d=0;
+  if(c && c===keyOf('pgprev')) d=-1; else if(c && c===keyOf('pgnext')) d=1;
+  else if(!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey){ if(e.key==='ArrowLeft'||e.key==='PageUp') d=-1; else if(e.key==='ArrowRight'||e.key==='PageDown') d=1; }
+  if(d){ e.preventDefault(); READ_NAV(d); }
+});
 function viewRead(id){
   var f=getFiche(id), v=$('#view');
   if(!f){ v.innerHTML='<div class="wrap"><div class="empty">Cette fiche n’existe plus. <a class="btn sm" href="#fiches">Mes fiches</a></div></div>'; return; }
   var all=sortedFiches(), idx=all.indexOf(f), prev=all[idx-1], next=all[idx+1];
-  v.innerHTML='<div class="wrap"><div class="rhead"><a class="btn sm ghost" href="#fiches" aria-label="Retour à mes fiches">'+ico(I.back)+'</a>'+tagHtml(f.ue)+'<h1>'+esc(f.title)+'</h1><a class="btn sm" href="#edit-'+f.id+'">'+ico(I.edit)+'Modifier</a><button class="btn sm pri" id="rPdf">'+ico(I.dl)+'PDF</button></div><div class="rbg"><div class="pages" id="rPages"></div></div>'+
+  v.innerHTML='<div class="wrap"><div class="rhead"><a class="btn sm ghost" href="#fiches" aria-label="Retour à mes fiches">'+ico(I.back)+'</a>'+tagHtml(f.ue)+'<h1>'+esc(f.title)+'</h1>'+(f.pages.length>1?'<span class="rpg"><button class="btn sm ghost" id="rPrev" aria-label="Page précédente" title="Page précédente (← ou '+(keyOf('pgprev')||'')+')">'+ico(I.left)+'</button><b id="rPgN" aria-live="polite">1 / '+f.pages.length+'</b><button class="btn sm ghost" id="rNext" aria-label="Page suivante" title="Page suivante (→ ou '+(keyOf('pgnext')||'')+')">'+ico(I.right)+'</button></span>':'')+'<a class="btn sm" href="#edit-'+f.id+'">'+ico(I.edit)+'Modifier</a><button class="btn sm pri" id="rPdf">'+ico(I.dl)+'PDF</button></div><div class="rbg"><div class="pages" id="rPages"></div></div>'+
     '<div style="display:flex;gap:10px;margin-top:20px">'+(prev?'<a class="btn" style="flex:1" href="#lire-'+prev.id+'">'+ico(I.left)+'Fiche précédente</a>':'<span style="flex:1"></span>')+(next?'<a class="btn" style="flex:1" href="#lire-'+next.id+'">Fiche suivante'+ico(I.right)+'</a>':'<span style="flex:1"></span>')+'</div></div>';
   var host=$('#rPages'), W=Math.min(PW, host.clientWidth||PW), sc=W/PW;
   var hostW=(host.clientWidth||PW)-8;
   f.pages.forEach(function(p,i){ var pw=document.createElement('div'); pw.className='pw'; var pg=document.createElement('div'); pw.appendChild(pg); host.appendChild(pw); renderPage(pg,f,i,{}); var s2=Math.min(PW,hostW)/PW; pw.style.width=(PW*s2)+'px'; pw.style.height=(PH*s2)+'px'; pg.style.transform='scale('+s2+')'; });
   $('#rPdf').onclick=function(){ exportPDF([f], f.title); };
+  var pws=function(){ return Array.prototype.slice.call(host.querySelectorAll('.pw')); };
+  var curIdx=function(){ var ps=pws(), best=0, lim=150; ps.forEach(function(x,i){ if(x.getBoundingClientRect().top<=lim+40) best=i; }); return best; };
+  var updN=function(){ var n=$('#rPgN'); if(n) n.textContent=(curIdx()+1)+' / '+f.pages.length; };
+  READ_NAV=function(d){ var ps=pws(); if(!ps.length) return; var i=clamp(curIdx()+d,0,ps.length-1); ps[i].scrollIntoView({ behavior:'smooth', block:'start' }); var n=$('#rPgN'); if(n) n.textContent=(i+1)+' / '+f.pages.length; };
+  var rp=$('#rPrev'), rn=$('#rNext'); if(rp) rp.onclick=function(){ READ_NAV(-1); }; if(rn) rn.onclick=function(){ READ_NAV(1); };
+  window.onscroll=function(){ if(READ_NAV) updN(); };
   host.addEventListener('click', function(e){ var g=e.target.closest('[data-goto]'); if(!g) return; var i=pageIdx(f, g.getAttribute('data-goto')), pws=host.querySelectorAll('.pw'); if(i>=0 && pws[i]) pws[i].scrollIntoView({ behavior:'smooth', block:'start' }); });
 }
 
 /* ---------------- EDITOR ---------------- */
 function viewEdit(id){
+  READ_NAV=null; window.onscroll=null;
   var f=getFiche(id), v=$('#view');
   if(!f){ v.innerHTML='<div class="wrap"><div class="empty">Cette fiche n’existe plus. <a class="btn sm" href="#fiches">Mes fiches</a></div></div>'; return; }
   ED={ fid:id, f:f, pi:0, sel:null, multi:[], cell:null, zoom:'fit', tool:null, from:null, editing:null, undo:[], redo:[], planOpen: !!(f.pages[0].plan) || !f.pages[0].items.length, scale:1, drag:null, editSnap:null, planSnap:false };
@@ -1775,6 +1794,8 @@ var CMDS={
   align:{tab:'edit', l:'Aligner les blocs', i:'<path d="M4 3v18M8 7h12M8 12h7M8 17h10"/>', t:'Aligne automatiquement les blocs proches', run:function(){ autoAlign(); }},
   plan:{tab:'edit', l:'Plan', i:'<path d="M4 6h16M8 12h12M8 18h12M4 12h.01M4 18h.01"/>', t:'Afficher ou masquer le plan (schéma écrit en liste)', run:function(){ ED.planOpen=!ED.planOpen; drawPlan(); fitPage(); }, on:function(){ return !!ED.planOpen; }},
   header:{tab:'page', l:'En-tête', i:'<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9h18M7 6.5h6"/>', menu:true, t:'Modifier l\u2019en-tête : titre, thème, où on en est dans le plan (double-clic sur l\u2019en-tête)', run:function(b){ openHeaderPop(b); }},
+  pgprev:{tab:'page', l:'Page précédente', i:'<path d="M15 18l-6-6 6-6"/>', icon:true, t:'Page précédente', run:function(){ var i=ED.pi-1; if(i<0){ toast('Tu es sur la première page.'); return; } goToPage(ED.f.pages[i].id); }},
+  pgnext:{tab:'page', l:'Page suivante', i:'<path d="M9 18l6-6-6-6"/>', icon:true, t:'Page suivante', run:function(){ var i=ED.pi+1; if(i>=ED.f.pages.length){ toast('Tu es sur la dernière page.'); return; } goToPage(ED.f.pages[i].id); }},
   addpage:{tab:'page', l:'Nouvelle page', i:'<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/>', run:function(){ var b=$('#pgAdd'); if(b) b.click(); }},
   portrait:{tab:'page', l:'Portrait', i:'<rect x="7" y="3" width="10" height="18" rx="1.5"/>', run:function(){ setOrient([ED.pi],'portrait'); }, on:function(){ return !isLand(curPage()); }},
   landscape:{tab:'page', l:'Paysage', i:'<rect x="3" y="7" width="18" height="10" rx="1.5"/>', run:function(){ setOrient([ED.pi],'landscape'); }, on:function(){ return isLand(curPage()); }},
@@ -1829,11 +1850,11 @@ function cmdBtn(k){ var c=CMDS[k], on=c.on?!!c.on():false, lab=esc(cmdLabel(k)),
   return '<button class="tb'+(on?' on':'')+'" data-cmd="'+k+'" title="'+esc(c.t||cmdLabel(k))+(kb?' ('+kb+')':'')+'"'+(c.icon?' aria-label="'+lab+'"':'')+(kb?' aria-keyshortcuts="'+kb.replace('Maj','Shift').replace('Ctrl','Control')+'"':'')+(c.menu?' aria-haspopup="true"':'')+(c.on?' aria-pressed="'+on+'"':'')+'>'+cmdIcon(k)+(c.icon?'':lab)+(c.menu?ico(I.down):'')+'</button>'; }
 
 /* ---------------- raccourcis clavier ---------------- */
-var DEFAULT_KEYS={ bx_retenir:'Alt+R', bx_definition:'Alt+E', bx_important:'Alt+I', bx_piege:'Alt+P', bx_exemple:'Alt+X', bx_methode:'Alt+M', bx_remarque:'Alt+N', bx_article:'Alt+A', text:'Alt+T', arrow:'Alt+F', table:'Alt+B' };
+var DEFAULT_KEYS={ pgprev:'Ctrl+←', pgnext:'Ctrl+→', bx_retenir:'Alt+R', bx_definition:'Alt+E', bx_important:'Alt+I', bx_piege:'Alt+P', bx_exemple:'Alt+X', bx_methode:'Alt+M', bx_remarque:'Alt+N', bx_article:'Alt+A', text:'Alt+T', arrow:'Alt+F', table:'Alt+B' };
 var BUILTIN_KEYS={ 'Ctrl+C':'Copier', 'Ctrl+V':'Coller', 'Ctrl+X':'Couper (pendant l’écriture)', 'Ctrl+Z':'Annuler', 'Ctrl+Y':'Rétablir', 'Ctrl+Maj+Z':'Rétablir', 'Ctrl+A':'Tout sélectionner', 'Ctrl+S':'Enregistrer', 'Ctrl+D':'Dupliquer', 'Ctrl+B':'Gras (pendant l’écriture)', 'Ctrl+I':'Italique (pendant l’écriture)', 'Ctrl+U':'Souligné (pendant l’écriture)', 'Ctrl+0':'Ajuster le zoom', 'F2':'Écrire dans l’élément', 'Ctrl+P':'Imprimer', 'F5':'Recharger la page', 'F11':'Plein écran', 'F12':'Outils de développement' };
-function keyMap(){ var m=S.settings.keys; return (m && typeof m==='object')?m:DEFAULT_KEYS; }
+function keyMap(){ var m=S.settings.keys, o={}, k; for(k in DEFAULT_KEYS) o[k]=DEFAULT_KEYS[k]; if(m && typeof m==='object'){ for(k in m) o[k]=m[k]; } return o; }
 function keyOf(cmd){ var v=keyMap()[cmd]; return (v && CMDS[cmd])?v:''; }
-var CODE_NAMES={ Minus:'-', Equal:'=', Comma:',', Period:'.', Slash:'/', Semicolon:';', Quote:'\'', BracketLeft:'[', BracketRight:']', Backslash:'\\', Backquote:'²', IntlBackslash:'<', Space:'Espace', Insert:'Inser', Home:'Début', End:'Fin', PageUp:'PgPréc', PageDown:'PgSuiv', NumpadAdd:'Pavé +', NumpadSubtract:'Pavé −', NumpadMultiply:'Pavé *', NumpadDivide:'Pavé /' };
+var CODE_NAMES={ ArrowLeft:'←', ArrowRight:'→', ArrowUp:'↑', ArrowDown:'↓', Minus:'-', Equal:'=', Comma:',', Period:'.', Slash:'/', Semicolon:';', Quote:'\'', BracketLeft:'[', BracketRight:']', Backslash:'\\', Backquote:'²', IntlBackslash:'<', Space:'Espace', Insert:'Inser', Home:'Début', End:'Fin', PageUp:'PgPréc', PageDown:'PgSuiv', NumpadAdd:'Pavé +', NumpadSubtract:'Pavé −', NumpadMultiply:'Pavé *', NumpadDivide:'Pavé /' };
 function comboOf(e){
   var c=e.code||'', k=null;
   if(/^Key[A-Z]$/.test(c)) k=c.slice(3); else if(/^Digit\d$/.test(c)) k=c.slice(5); else if(/^Numpad\d$/.test(c)) k='Pavé '+c.slice(6);
@@ -1846,6 +1867,7 @@ function runShortcut(e, editing){
   var c=comboOf(e); if(!c) return false;
   if(e.ctrlKey && e.altKey && !e.metaKey) return false; /* AltGr : caractères spéciaux */
   if(editing && !(e.ctrlKey||e.metaKey||e.altKey) && !/^F\d/.test(c)) return false; /* en écrivant, les touches simples tapent du texte */
+  if(editing && /^(Ctrl\+)?(Maj\+)?[←→↑↓]$|Début|Fin/.test(c) && !e.altKey) return false; /* Ctrl+flèches = mots pendant l'écriture */
   var ks=cmdsForCombo(c); if(!ks.length) return false;
   var k=ks[0]; e.preventDefault(); e.stopPropagation();
   if(ks.length>1) toast(c+' est en double ('+ks.map(cmdLabel).join(', ')+') : « '+cmdLabel(k)+' » est utilisé. Corrige-le dans Personnaliser.');
