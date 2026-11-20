@@ -20,7 +20,7 @@ html[data-theme="sombre"] .toast{background:#ECECE8;color:#17181A}
 .thb{width:38px;min-height:38px;padding:0}
 .aiwrap{max-width:1400px}
 .aistep{margin-top:18px;gap:10px}
-.aistep[hidden]{display:none}.aiphone{margin-top:10px}.aiphh{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--soft,rgba(127,127,127,.08));font-size:13px}.aiphh svg{flex:none;width:20px;height:20px;margin-top:2px}.aiphh span{display:block;opacity:.8;margin-top:2px}.aiphq{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:12px;border:1px solid var(--line,#ddd);border-radius:12px}.aiphq img{width:180px;height:180px;background:#fff;border-radius:8px;padding:4px}.aiphq ol{margin:6px 0;padding-left:18px;font-size:13px}.aiphq code{user-select:all}
+.aistep[hidden]{display:none}.aiws{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#ddd)}.aiws.need{border-color:#d97706;background:rgba(217,119,6,.08)}.aiphone{margin-top:10px}.aiphh{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--soft,rgba(127,127,127,.08));font-size:13px}.aiphh svg{flex:none;width:20px;height:20px;margin-top:2px}.aiphh span{display:block;opacity:.8;margin-top:2px}.aiphq{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:12px;border:1px solid var(--line,#ddd);border-radius:12px}.aiphq img{width:180px;height:180px;background:#fff;border-radius:8px;padding:4px}.aiphq ol{margin:6px 0;padding-left:18px;font-size:13px}.aiphq code{user-select:all}
 .aistep>.seg,.aistep>.aichip,.aistep>label.aichip{align-self:flex-start}
 .aisth{display:flex;align-items:center;gap:12px;margin-bottom:4px}
 .aisth h2{font-size:18px;margin:0}
@@ -1360,7 +1360,7 @@ var AI_NATURES=[['definition','Définition'],['retenir','À retenir'],['importan
 var AI_BTYPES=[['encadre','Encadré'],['titre','Sous-titre'],['texte','Texte'],['tableau','Tableau'],['schema','Schéma'],['formule','Formule']];
 var AI_PARTS=[['definition','Définitions'],['retenir','À retenir'],['schema','Schéma'],['tableau','Tableau comparatif'],['exemple','Exemples'],['piege','Pièges'],['methode','Méthode'],['formule','Formules'],['article','Références (articles, normes)']];
 var AIW={ imgs:[], busy:false, ctrl:null, draft:null, cfg:null, keyInfo:null };
-function aiCfg(){ var a=S.settings.ai||{}; return { budget:+a.budget||0, history:Array.isArray(a.history)?a.history:[], model:AI_MODELS[a.model]?a.model:'claude-sonnet-5-5', style:/^(synth|standard|detail)$/.test(a.style||'')?a.style:'standard', tech:a.tech!==false, extra:a.extra||'', pages:(a.pages==null||+a.pages===0)?0:clamp(parseInt(a.pages,10)||2,1,6), parts:Array.isArray(a.parts)?a.parts:['definition','retenir','schema','tableau','exemple'] }; }
+function aiCfg(){ var a=S.settings.ai||{}; return { ws:/^wrkspc_[A-Za-z0-9]+$/.test(a.ws||'')?a.ws:'', budget:+a.budget||0, history:Array.isArray(a.history)?a.history:[], model:AI_MODELS[a.model]?a.model:'claude-sonnet-5-5', style:/^(synth|standard|detail)$/.test(a.style||'')?a.style:'standard', tech:a.tech!==false, extra:a.extra||'', pages:(a.pages==null||+a.pages===0)?0:clamp(parseInt(a.pages,10)||2,1,6), parts:Array.isArray(a.parts)?a.parts:['definition','retenir','schema','tableau','exemple'] }; }
 function aiSave(patch){ var a=S.settings.ai||{}; Object.keys(patch).forEach(function(k){ a[k]=patch[k]; }); S.settings.ai=a; Store.saveSettings(); }
 function aiSpent(){ return aiCfg().history.reduce(function(t,h){ return t+(+h.cost||0); },0); }
 function money(v){ return (Math.round(v*100)/100).toLocaleString('fr-FR',{ minimumFractionDigits:2, maximumFractionDigits:2 })+' $'; }
@@ -1368,9 +1368,11 @@ function aiKeyInfo(){ if(window.fichesAI) return window.fichesAI.key('get'); var
 function aiKeySet(k){ if(window.fichesAI) return window.fichesAI.key('set',k); try{ localStorage.setItem(AI_LS,k); }catch(e){} return Promise.resolve({ has:true, tail:k.slice(-4) }); }
 function aiKeyDel(){ if(window.fichesAI) return window.fichesAI.key('del'); try{ localStorage.removeItem(AI_LS); }catch(e){} return Promise.resolve({ has:false }); }
 function aiPost(body, signal){
-  if(window.fichesAI) return window.fichesAI.call(body);
+  var ws=aiCfg().ws;
+  if(window.fichesAI) return window.fichesAI.call(body, ws);
   var k=''; try{ k=localStorage.getItem(AI_LS)||''; }catch(e){}
-  return fetch(AI_URL,{ method:'POST', signal:signal, headers:{ 'x-api-key':k, 'anthropic-version':'2023-06-01', 'content-type':'application/json', 'anthropic-dangerous-direct-browser-access':'true' }, body:JSON.stringify(body) })
+  var h={ 'x-api-key':k, 'anthropic-version':'2023-06-01', 'content-type':'application/json', 'anthropic-dangerous-direct-browser-access':'true' }; if(ws) h['anthropic-workspace-id']=ws;
+  return fetch(AI_URL,{ method:'POST', signal:signal, headers:h, body:JSON.stringify(body) })
     .then(function(r){ return r.text().then(function(t){ return { status:r.status, body:t }; }); });
 }
 function aiErr(st, body){ var m=''; try{ m=(JSON.parse(body).error||{}).message||''; }catch(e){}
@@ -1378,6 +1380,7 @@ function aiErr(st, body){ var m=''; try{ m=(JSON.parse(body).error||{}).message|
   if(st===403) return 'Accès refusé par l’API ('+m+').';
   if(st===429) return 'Trop de demandes ou limite atteinte : attends une minute et réessaie.';
   if(st===529||st===503) return 'L’API est surchargée pour le moment : réessaie dans quelques minutes.';
+  if(st===400 && /workspace/i.test(m)){ AIW.needWs=true; setTimeout(function(){ aiDrawKey(true); }, 50); return 'Ta clé API n’est rattachée à aucun workspace : choisis-en un dans l’encadré « Clé API » en haut de la page (étape 1), puis relance.'; }
   if(st===400 && /credit|balance/i.test(m)) return 'Crédits insuffisants sur ton compte Anthropic : recharge-le dans la console.';
   return 'Erreur '+st+(m?' : '+m:''); }
 
@@ -1566,13 +1569,36 @@ function aiDrawCredits(){
   $('#aiAddB').onclick=function(){ var v=parseFloat(String($('#aiAdd').value).replace(',','.')); if(!(v>0)){ toast('Indique le montant acheté, en dollars.'); return; } aiSave({ budget:Math.round((aiCfg().budget+v)*100)/100 }); aiDrawCredits(); aiDrawEstimate(); toast(money(v)+' ajoutés au solde suivi.'); };
   $('#aiSetB').onclick=function(){ var v=prompt('Solde actuel affiché dans ta console Anthropic (en $) :', String(Math.max(0,Math.round(rest*100)/100))); if(v==null) return; var n=parseFloat(String(v).replace(',','.')); if(!(n>=0)) return; aiSave({ budget:Math.round((n+aiSpent())*100)/100 }); aiDrawCredits(); aiDrawEstimate(); };
 }
-function aiDrawKey(){
+
+function aiWsList(){
+  if(window.fichesAI && window.fichesAI.ws) return window.fichesAI.ws();
+  var k=''; try{ k=localStorage.getItem(AI_LS)||''; }catch(e){}
+  return fetch('https://api.anthropic.com/v1/organizations/workspaces?limit=100',{ headers:{ 'x-api-key':k, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' } }).then(function(r){ return r.text().then(function(t){ return { status:r.status, body:t }; }); });
+}
+function aiWsFind(){
+  var o=$('#aiWsOut'); if(o) o.innerHTML='<span class="aimut">Recherche de tes workspaces…</span>';
+  aiWsList().then(function(r){
+    var d=null; try{ d=JSON.parse(r.body); }catch(e){}
+    var list=(d && Array.isArray(d.data))?d.data.filter(function(w){ return !w.archived_at; }):null;
+    if(r.status!==200 || !list){ if(o) o.innerHTML='<span class="aimut">Impossible de lister automatiquement tes workspaces. Copie l’identifiant (wrkspc_…) depuis la console Anthropic, rubrique Settings › Workspaces, ou crée plutôt une clé directement dans un workspace.</span>'; return; }
+    if(!list.length){ if(o) o.innerHTML='<span class="aimut">Aucun workspace trouvé : crée-en un dans la console (Settings › Workspaces), ou crée une nouvelle clé API dans un workspace.</span>'; return; }
+    if(list.length===1){ aiSave({ ws:list[0].id }); AIW.needWs=false; toast('Workspace « '+list[0].name+' » sélectionné.'); aiDrawKey(); return; }
+    if(o){ o.innerHTML='<label class="aif">Choisis un workspace<select id="aiWsSel"><option value="">—</option>'+list.map(function(w){ return '<option value="'+esc(w.id)+'">'+esc(w.name)+'</option>'; }).join('')+'</select></label>';
+      $('#aiWsSel').onchange=function(){ if(!this.value) return; aiSave({ ws:this.value }); AIW.needWs=false; toast('Workspace enregistré.'); aiDrawKey(); }; }
+  }).catch(function(){ if(o) o.innerHTML='<span class="aimut">Connexion impossible. Colle l’identifiant wrkspc_… à la main.</span>'; });
+}
+function aiDrawKey(focusWs){
   var el=$('#aiKeyBox'); if(!el) return;
   aiKeyInfo().then(function(ki){ AIW.keyInfo=ki;
-    el.innerHTML=ki&&ki.has?'<div class="airow"><span class="aiok">'+ico('<path d="M5 12l5 5L20 7"/>')+'Clé API enregistrée sur cet appareil (…'+esc(ki.tail||'')+')</span><button type="button" class="btn sm ghost" id="aiKeyDel">Supprimer la clé</button></div>'
+    el.innerHTML=ki&&ki.has?'<div class="airow"><span class="aiok">'+ico('<path d="M5 12l5 5L20 7"/>')+'Clé API enregistrée sur cet appareil (…'+esc(ki.tail||'')+')</span><button type="button" class="btn sm ghost" id="aiKeyDel">Supprimer la clé</button></div>'+
+      ((aiCfg().ws||AIW.needWs)?'<div class="aiws'+(AIW.needWs&&!aiCfg().ws?' need':'')+'" id="aiWsBox"><div class="airow"><label class="aif" style="flex:1 1 280px">Workspace (seulement si l’API le demande)<input id="aiWs" placeholder="wrkspc_…" autocomplete="off" spellcheck="false" value="'+esc(aiCfg().ws)+'"></label><button type="button" class="btn sm ghost" id="aiWsFind">Trouver mes workspaces</button></div><div id="aiWsOut" style="margin-top:6px"></div></div>':'<p class="aimut" style="margin:6px 0 0"><a href="#" id="aiWsShow">Ma clé demande un workspace</a></p>')
       :'<div class="airow"><label class="aif" style="flex:1 1 320px">Clé API Anthropic<input type="password" id="aiKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"></label><button type="button" class="btn sm pri" id="aiKeySave">Enregistrer la clé</button><a class="btn sm ghost" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Créer une clé ↗</a></div><p class="aimut" style="margin:6px 0 0">La clé reste sur cet appareil'+(window.fichesAI?' (chiffrée par Windows)':' (dans ce navigateur)')+' et n’est envoyée qu’à Anthropic.</p>';
     var sv=$('#aiKeySave'); if(sv) sv.onclick=function(){ var k=$('#aiKey').value.trim(); if(!/^sk-ant-/.test(k)){ toast('La clé doit commencer par « sk-ant- ».'); return; } aiKeySet(k).then(function(){ toast('Clé enregistrée.'); aiDrawKey(); }); };
     var kk=$('#aiKey'); if(kk) kk.onkeydown=function(e){ e.stopPropagation(); if(e.key==='Enter') sv.click(); };
+    var wi=$('#aiWs'); if(wi){ wi.onkeydown=function(e){ e.stopPropagation(); }; wi.onchange=function(){ var v=wi.value.trim(); if(v && !/^wrkspc_[A-Za-z0-9]+$/.test(v)){ toast('L’identifiant doit commencer par « wrkspc_ ».'); return; } aiSave({ ws:v }); if(v) AIW.needWs=false; toast(v?'Workspace enregistré.':'Workspace retiré.'); }; }
+    var wf=$('#aiWsFind'); if(wf) wf.onclick=aiWsFind;
+    var wsh=$('#aiWsShow'); if(wsh) wsh.onclick=function(e){ e.preventDefault(); AIW.needWs=true; aiDrawKey(true); };
+    if(focusWs && $('#aiWsBox')){ $('#aiWsBox').scrollIntoView({ block:'center', behavior:'smooth' }); if(!aiCfg().ws) aiWsFind(); }
     var dl=$('#aiKeyDel'); if(dl) dl.onclick=function(){ aiKeyDel().then(function(){ toast('Clé supprimée de cet appareil.'); aiDrawKey(); }); };
   });
 }
