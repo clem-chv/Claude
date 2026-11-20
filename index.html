@@ -18,6 +18,65 @@ html[data-theme="sombre"] .tb:hover,html[data-theme="sombre"] .menu-pop button:h
 html[data-theme="sombre"] .rtab.fmt.has,html[data-theme="sombre"] .rtab.fmt.on{color:#8AA8FF;border-bottom-color:#8AA8FF}
 html[data-theme="sombre"] .toast{background:#ECECE8;color:#17181A}
 .thb{width:38px;min-height:38px;padding:0}
+.aiwrap{max-width:1400px}
+.aistep{margin-top:18px;gap:10px}
+.aistep[hidden]{display:none}
+.aistep>.seg,.aistep>.aichip,.aistep>label.aichip{align-self:flex-start}
+.aisth{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.aisth h2{font-size:18px;margin:0}
+.ainum{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--on-ink);font-weight:700;font-size:14px;flex:none}
+.aimut{font-size:13px;color:var(--muted)}
+.aif{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+.aif input,.aif select,.aif textarea{height:38px;padding:0 10px;border:1px solid var(--strong);border-radius:6px;background:var(--input);font-size:14px;color:var(--text);font-family:inherit}
+.aif textarea{height:auto;padding:8px 10px;resize:vertical}
+.aigrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.airow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+.aichips{display:flex;flex-wrap:wrap;gap:8px}
+.aichip{display:flex;align-items:center;gap:7px;min-height:34px;padding:0 12px;border:1px solid var(--border);border-radius:17px;font-size:13.5px;cursor:pointer;background:var(--surface)}
+.aichip:has(input:checked){border-color:var(--ink);background:var(--active)}
+.aidrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:140px;border:2px dashed var(--strong);border-radius:10px;cursor:pointer;color:var(--muted);text-align:center;padding:16px}
+.aidrop b{color:var(--text);font-size:15px}
+.aidrop .ico{width:28px;height:28px}
+.aidrop.over,.aidrop:hover{border-color:var(--focus);background:var(--hover)}
+.aiimgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.aiimg{position:relative;display:flex;flex-direction:column;gap:4px;border:1px solid var(--border);border-radius:8px;padding:6px;background:var(--surface)}
+.aiimg img,.aipdf{width:100%;height:110px;object-fit:cover;border-radius:4px;background:#f3f3f0}
+.aipdf{display:flex;align-items:center;justify-content:center;font-weight:700;color:#B42318;font-size:20px}
+.aiimg span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aiimgb{display:flex;justify-content:flex-end;gap:2px}
+.aiest{font-size:14px}
+.aiwarn{margin-top:6px;color:#B54708;font-size:13px}
+.aierr{color:#B42318}
+.aiok{display:inline-flex;align-items:center;gap:8px;color:#067647;font-size:14px;font-weight:500}
+.aispin{display:inline-block;width:14px;height:14px;border:2px solid var(--strong);border-top-color:var(--ink);border-radius:50%;animation:aisp 0.8s linear infinite;vertical-align:-2px;margin-right:4px}
+@keyframes aisp{to{transform:rotate(360deg)}}
+.aicr{display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px}
+.aibig{font-size:32px;font-weight:700;letter-spacing:-.01em;color:#067647}
+.aicr.mid .aibig{color:#B54708}.aicr.low .aibig{color:#B42318}
+.aicrs{display:flex;gap:26px}
+.aicrs>div{display:flex;flex-direction:column;gap:2px}
+.aicrs b{font-size:16px}
+.aibar{height:6px;border-radius:3px;background:var(--active);margin:12px 0;overflow:hidden}
+.aibar i{display:block;height:100%;background:#12B76A}
+.aicr.mid+.aibar i{background:#F79009}.aicr.low+.aibar i{background:#F04438}
+.aihist{margin-top:12px;font-size:13px}
+.aihist summary{cursor:pointer;color:var(--muted)}
+.aihist table{width:100%;border-collapse:collapse;margin-top:8px}
+.aihist th,.aihist td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)}
+.aitwo{display:grid;grid-template-columns:minmax(360px,0.9fr) minmax(0,1.1fr);gap:22px;align-items:start}
+.aied{display:flex;flex-direction:column;gap:12px}
+.aipg{border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--panel)}
+.aipgh{display:flex;align-items:center;gap:8px}
+.aipgh input{flex:1;min-width:0;height:32px;padding:0 8px;border:1px solid var(--strong);border-radius:6px;background:var(--input);font-size:13px;color:var(--text)}
+.aibl{border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:6px;display:flex;flex-direction:column;gap:6px}
+.aiblh{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.aiblh select,.aiblh input{height:30px;padding:0 6px;border:1px solid var(--strong);border-radius:6px;background:var(--input);font-size:13px;color:var(--text)}
+.aibl textarea{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border);border-radius:5px;background:var(--input);font:13.5px/1.45 Inter,system-ui,sans-serif;color:var(--text);resize:vertical}
+.aiprevw{position:sticky;top:76px}
+.aiprev{display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 120px);overflow:auto;padding:2px}
+.aipw{box-shadow:0 1px 3px rgba(0,0,0,.12);background:#fff;overflow:hidden;flex:none}
+@media (max-width:1000px){ .aigrid{grid-template-columns:1fr 1fr} .aitwo{grid-template-columns:1fr} .aiprevw{position:static} }
+
 .tbl .dg1{text-align:right;padding-left:35%;white-space:nowrap;min-height:1.45em}
 .tbl td[contenteditable] .dg1:empty::before,.tbl td[contenteditable] .dg2:empty::before{content:attr(data-ph);opacity:.45;font-weight:400}
 .tbl td[contenteditable] .dg1,.tbl td[contenteditable] .dg2{outline:1px dashed rgba(127,127,127,.35);outline-offset:1px;cursor:text}
@@ -438,6 +497,7 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 <nav class="nav" aria-label="Menu principal">
 <a href="#accueil" data-nav="accueil">Accueil</a>
 <a href="#fiches" data-nav="fiches">Mes fiches</a>
+<a href="#rediger" data-nav="rediger">Rédiger</a>
 <a href="#exporter" data-nav="exporter">Exporter</a>
 <a href="#personnaliser" data-nav="personnaliser">Personnaliser</a>
 </nav>
@@ -612,6 +672,7 @@ function mergeSettings(v){
   if(/^#[0-9a-fA-F]{6}$/.test(v.textColor||'')) s.textColor=v.textColor;
   if(v.defOrient==='portrait'||v.defOrient==='landscape') s.defOrient=v.defOrient;
   if(v.schemas && typeof v.schemas==='object'){ s.schemas={}; Object.keys(v.schemas).forEach(function(k){ var c=v.schemas[k]; if(c && typeof c==='object') s.schemas[k]=clone(c); }); }
+  if(v.ai && typeof v.ai==='object'){ s.ai=clone(v.ai); if(Array.isArray(s.ai.history)) s.ai.history=s.ai.history.slice(-300); }
   if(Array.isArray(v.mySchemas)) s.mySchemas=v.mySchemas.filter(function(x){ return x && x.id && Array.isArray(x.nodes); }).slice(0,40);
   if(v.boxInline && typeof v.boxInline==='object'){ s.boxInline={}; Object.keys(BOXK).forEach(function(k){ if(v.boxInline[k]) s.boxInline[k]=true; }); }
   if(v.boxNames && typeof v.boxNames==='object'){ s.boxNames={}; Object.keys(BOXK).forEach(function(k){ if(typeof v.boxNames[k]==='string' && v.boxNames[k].trim()) s.boxNames[k]=v.boxNames[k].trim().slice(0,40); }); }
@@ -1031,7 +1092,7 @@ function curRoute(){
   var h=(location.hash||'').replace('#',''); var m;
   if((m=h.match(/^edit-([A-Za-z0-9]+)$/))) return { name:'edit', id:m[1] };
   if((m=h.match(/^lire-([A-Za-z0-9]+)$/))) return { name:'lire', id:m[1] };
-  if(h==='fiches'||h==='exporter'||h==='personnaliser') return { name:h };
+  if(h==='fiches'||h==='exporter'||h==='personnaliser'||h==='rediger') return { name:h };
   return { name:'accueil' };
 }
 var lastRoute='';
@@ -1044,6 +1105,7 @@ function route(keepScroll){
   if(r.name==='accueil'||r.name==='personnaliser') viewHome(r.name==='personnaliser'?'settings':false);
   else if(r.name==='fiches'||r.name==='exporter') viewLib(r.name==='exporter');
   else if(r.name==='lire') viewRead(r.id);
+  else if(r.name==='rediger') viewAI();
   else if(r.name==='edit'){ if(!ED || ED.fid!==r.id) viewEdit(r.id); }
   if(keepScroll && key===lastRoute) window.scrollTo(0,y); else if(!(r.name==='personnaliser')) window.scrollTo(0,0);
   lastRoute=key;
@@ -1077,7 +1139,7 @@ function openNew(preUe){
     '<p style="margin:0;font-size:13px;color:var(--muted);line-height:1.5">Une fiche peut tout mélanger : schéma, tableau, texte de synthèse, encadrés et formules, sur autant de pages que nécessaire.</p>'+
     '<div class="act"><button class="btn" data-x>Annuler</button><button class="btn pri" data-ok>Créer la fiche</button></div>', function(m){
       m.querySelector('[data-x]').onclick=closeModal;
-      var go=function(){ var f=newFiche($('#nUe').value, $('#nTitle').value.trim()||'Nouvelle fiche', $('#nTheme').value.trim()); var o=$('#nOr').value; S.lastOrient=o; try{ localStorage.setItem('fichesDSCG.orient',o); }catch(e){} if(o==='landscape') f.pages[0].orient='landscape'; var sz=$('#nSz').value; S.lastSize=sz; try{ localStorage.setItem('fichesDSCG.size',sz); }catch(e){} if(sz!=='A4') f.pages[0].size=sz; S.fiches.push(f); Store.saveFiche(f,true); closeModal(); location.hash='#edit-'+f.id; };
+      var go=function(){ var f=newFiche($('#nUe').value, $('#nTitle').value.trim()||'Nouvelle fiche', $('#nTheme').value.trim()); var o=$('#nOr').value; S.lastOrient=o; try{ localStorage.setItem('fichesDSCG.orient',o); }catch(e){} if(o==='landscape') f.pages[0].orient='landscape'; else delete f.pages[0].orient; var sz=$('#nSz').value; S.lastSize=sz; try{ localStorage.setItem('fichesDSCG.size',sz); }catch(e){} if(sz!=='A4') f.pages[0].size=sz; S.fiches.push(f); Store.saveFiche(f,true); closeModal(); location.hash='#edit-'+f.id; };
       m.querySelector('[data-ok]').onclick=go;
       $('#nTitle').addEventListener('keydown', function(e){ if(e.key==='Enter') go(); });
       setTimeout(function(){ $('#nTitle').focus(); },30);
@@ -1288,6 +1350,251 @@ function openFichePicker(btn){
   var cur=navOrder().map(function(f){ return f.id; }).indexOf(id); sel=Math.max(0,cur); draw();
   placePop(m, btn, 380); q.focus();
 }
+
+/* ======================================================================
+   RÉDIGER UNE FICHE AVEC L'IA (API Anthropic, clé personnelle)
+   ====================================================================== */
+var AI_URL='https://api.anthropic.com/v1/messages', AI_LS='fichesDSCG.apiKey', AI_DRAFT='fichesDSCG.aiDraft';
+var AI_MODELS={ 'claude-sonnet-5-5':{ l:'Claude Sonnet 5.5 · recommandé', pin:2, pout:10 }, 'claude-opus-5-5':{ l:'Claude Opus 5.5 · plus fin, 2× plus cher', pin:4, pout:20 } };
+var AI_NATURES=[['definition','Définition'],['retenir','À retenir'],['important','Important'],['piege','Piège'],['exemple','Exemple'],['methode','Méthode'],['remarque','Remarque'],['article','Articles et références']];
+var AI_BTYPES=[['encadre','Encadré'],['titre','Sous-titre'],['texte','Texte'],['tableau','Tableau'],['schema','Schéma'],['formule','Formule']];
+var AI_PARTS=[['definition','Définitions'],['retenir','À retenir'],['schema','Schéma'],['tableau','Tableau comparatif'],['exemple','Exemples'],['piege','Pièges'],['methode','Méthode'],['formule','Formules'],['article','Références (articles, normes)']];
+var AIW={ imgs:[], busy:false, ctrl:null, draft:null, cfg:null, keyInfo:null };
+function aiCfg(){ var a=S.settings.ai||{}; return { budget:+a.budget||0, history:Array.isArray(a.history)?a.history:[], model:AI_MODELS[a.model]?a.model:'claude-sonnet-5-5', style:/^(synth|standard|detail)$/.test(a.style||'')?a.style:'standard', tech:a.tech!==false, extra:a.extra||'', pages:clamp(parseInt(a.pages,10)||2,1,6), parts:Array.isArray(a.parts)?a.parts:['definition','retenir','schema','tableau','exemple'] }; }
+function aiSave(patch){ var a=S.settings.ai||{}; Object.keys(patch).forEach(function(k){ a[k]=patch[k]; }); S.settings.ai=a; Store.saveSettings(); }
+function aiSpent(){ return aiCfg().history.reduce(function(t,h){ return t+(+h.cost||0); },0); }
+function money(v){ return (Math.round(v*100)/100).toLocaleString('fr-FR',{ minimumFractionDigits:2, maximumFractionDigits:2 })+' $'; }
+function aiKeyInfo(){ if(window.fichesAI) return window.fichesAI.key('get'); var k=''; try{ k=localStorage.getItem(AI_LS)||''; }catch(e){} return Promise.resolve({ has:!!k, tail:k.slice(-4) }); }
+function aiKeySet(k){ if(window.fichesAI) return window.fichesAI.key('set',k); try{ localStorage.setItem(AI_LS,k); }catch(e){} return Promise.resolve({ has:true, tail:k.slice(-4) }); }
+function aiKeyDel(){ if(window.fichesAI) return window.fichesAI.key('del'); try{ localStorage.removeItem(AI_LS); }catch(e){} return Promise.resolve({ has:false }); }
+function aiPost(body, signal){
+  if(window.fichesAI) return window.fichesAI.call(body);
+  var k=''; try{ k=localStorage.getItem(AI_LS)||''; }catch(e){}
+  return fetch(AI_URL,{ method:'POST', signal:signal, headers:{ 'x-api-key':k, 'anthropic-version':'2023-06-01', 'content-type':'application/json', 'anthropic-dangerous-direct-browser-access':'true' }, body:JSON.stringify(body) })
+    .then(function(r){ return r.text().then(function(t){ return { status:r.status, body:t }; }); });
+}
+function aiErr(st, body){ var m=''; try{ m=(JSON.parse(body).error||{}).message||''; }catch(e){}
+  if(st===401) return 'Clé API refusée : vérifie-la dans ta console Anthropic.';
+  if(st===403) return 'Accès refusé par l’API ('+m+').';
+  if(st===429) return 'Trop de demandes ou limite atteinte : attends une minute et réessaie.';
+  if(st===529||st===503) return 'L’API est surchargée pour le moment : réessaie dans quelques minutes.';
+  if(st===400 && /credit|balance/i.test(m)) return 'Crédits insuffisants sur ton compte Anthropic : recharge-le dans la console.';
+  return 'Erreur '+st+(m?' : '+m:''); }
+
+/* ---- images ---- */
+function aiAddFiles(files){
+  var list=Array.prototype.slice.call(files||[]); if(!list.length) return;
+  var jobs=list.map(function(fl){ return new Promise(function(res){
+    if(AIW.imgs.length>=20){ res(null); return; }
+    if(fl.type==='application/pdf'){ if(fl.size>25*1024*1024){ toast(fl.name+' est trop lourd (25 Mo maximum).'); res(null); return; } var r=new FileReader(); r.onload=function(){ res({ id:uid('i'), name:fl.name, kind:'pdf', media:'application/pdf', data:String(r.result).split(',')[1], size:fl.size }); }; r.onerror=function(){ res(null); }; r.readAsDataURL(fl); return; }
+    if(!/^image\//.test(fl.type)){ toast(fl.name+' : format non pris en charge (images ou PDF).'); res(null); return; }
+    var url=URL.createObjectURL(fl), im=new Image(); im.onload=function(){ var mx=1568, sc=Math.min(1, mx/Math.max(im.width, im.height)), w=Math.round(im.width*sc), h=Math.round(im.height*sc), cv=document.createElement('canvas'); cv.width=w; cv.height=h; var cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,w,h); cx.drawImage(im,0,0,w,h); var du=cv.toDataURL('image/jpeg',0.85); URL.revokeObjectURL(url); res({ id:uid('i'), name:fl.name, kind:'image', media:'image/jpeg', data:du.split(',')[1], thumb:du, w:w, h:h }); };
+    im.onerror=function(){ URL.revokeObjectURL(url); toast('Image illisible : '+fl.name); res(null); }; im.src=url; }); });
+  Promise.all(jobs).then(function(r){ r.forEach(function(x){ if(x) AIW.imgs.push(x); }); if(AIW.imgs.length>=20) toast('20 documents au maximum par fiche.'); aiDrawImgs(); aiDrawEstimate(); });
+}
+function aiDrawImgs(){ var g=$('#aiImgs'); if(!g) return;
+  g.innerHTML=AIW.imgs.map(function(x,i){ return '<div class="aiimg">'+(x.kind==='pdf'?'<div class="aipdf">PDF</div>':'<img src="'+x.thumb+'" alt="">')+'<span title="'+esc(x.name)+'">'+(i+1)+'. '+esc(x.name)+'</span><div class="aiimgb"><button type="button" class="kclr" data-imv="'+i+':-1" aria-label="Déplacer avant" title="Avant">‹</button><button type="button" class="kclr" data-imv="'+i+':1" aria-label="Déplacer après" title="Après">›</button><button type="button" class="kclr" data-imx="'+i+'" aria-label="Retirer '+esc(x.name)+'" title="Retirer">×</button></div></div>'; }).join('');
+  $$('[data-imx]',g).forEach(function(b){ b.onclick=function(){ AIW.imgs.splice(+b.getAttribute('data-imx'),1); aiDrawImgs(); aiDrawEstimate(); }; });
+  $$('[data-imv]',g).forEach(function(b){ b.onclick=function(){ var q=b.getAttribute('data-imv').split(':'), i=+q[0], j=i+(+q[1]); if(j<0||j>=AIW.imgs.length) return; var t=AIW.imgs[i]; AIW.imgs[i]=AIW.imgs[j]; AIW.imgs[j]=t; aiDrawImgs(); }; });
+  var c=$('#aiImgN'); if(c) c.textContent=AIW.imgs.length?AIW.imgs.length+' document'+(AIW.imgs.length>1?'s':''):'Aucun document'; }
+
+/* ---- estimation ---- */
+function aiEstimate(){ var c=aiCfg(), m=AI_MODELS[c.model], tin=1500; AIW.imgs.forEach(function(x){ tin+= x.kind==='pdf' ? Math.round(x.size/1024/1024*2500+1500) : Math.min(1650, Math.ceil(x.w*x.h/750)); });
+  var tout=Math.min(16000, 1200+c.pages*(c.style==='detail'?2600:(c.style==='synth'?1400:2000))); return { tin:tin, tout:tout, cost:tin/1e6*m.pin+tout/1e6*m.pout }; }
+function aiDrawEstimate(){ var e=$('#aiEst'); if(!e) return; var x=aiEstimate(), rest=aiCfg().budget-aiSpent();
+  e.innerHTML='Coût estimé : <b>≈ '+money(x.cost)+'</b> <span class="aimut">(≈ '+Math.round(x.tin/100)/10+' k tokens lus, '+Math.round(x.tout/100)/10+' k écrits au maximum)</span>'+(aiCfg().budget && rest<x.cost?'<div class="aiwarn">Ton solde suivi ('+money(rest)+') est inférieur au coût estimé.</div>':''); }
+
+/* ---- prompt ---- */
+function aiPrompt(meta){
+  var c=aiCfg(), st={ synth:'Style SYNTHÉTIQUE : mots-clés, phrases nominales très courtes, listes à puces, aucun paragraphe.', standard:'Style STANDARD : phrases courtes et claires, listes à puces quand c’est utile.', detail:'Style DÉTAILLÉ : explications complètes (mécanismes, conditions, exceptions), avec exemples.' }[c.style];
+  var sys='Tu es un professeur expert du DSCG (diplôme supérieur de comptabilité et de gestion). Tu rédiges des fiches de révision en français à partir des documents fournis (photos de livres, notes manuscrites, PDF).\n'+
+    'Règles : n’utilise que le contenu des documents, n’invente rien. Si un passage est illisible ou incertain, écris [à vérifier]. Respecte la logique du cours (plan, définitions, conditions, exceptions, exemples, chiffres).\n'+
+    'Réponds UNIQUEMENT avec un objet JSON valide, sans texte ni balise autour, au format :\n'+
+    '{"titre":"Titre de la fiche","pages":[{"plan":"Partie > Chapitre > Section (où on en est dans le plan)","blocs":[\n'+
+    ' {"type":"titre","texte":"Sous-titre"},\n'+
+    ' {"type":"encadre","nature":"definition|retenir|important|piege|exemple|methode|remarque|article","texte":"Texte. **gras** pour les mots clés. Lignes commençant par - pour les puces."},\n'+
+    ' {"type":"tableau","lignes":[["En-tête 1","En-tête 2"],["cellule","cellule"]]},\n'+
+    ' {"type":"schema","plan":"Notion principale\\n  Idée 1 | précision courte\\n    Détail\\n  Idée 2"},\n'+
+    ' {"type":"formule","libelle":"Nom de la formule","texte":"Résultat = A - B"},\n'+
+    ' {"type":"texte","texte":"Texte libre"}\n]}]}\n'+
+    'Le plan d’un schéma utilise 2 espaces de retrait par niveau, 12 éléments au plus, un seul schéma par page (il occupe toute la page). Les tableaux ont 2 à 5 colonnes, la première ligne est l’en-tête.';
+  var ue=ueOf(meta.ue)||{}, lay=(meta.orient==='landscape'?'paysage':'portrait')+' '+(meta.size||'A4');
+  var u='Chapitre : '+meta.title+'\nUE : '+meta.ue+' – '+(ue.name||'')+'\nFormat : '+lay+', environ '+c.pages+' page'+(c.pages>1?'s':'')+' (une page '+lay+' contient environ '+(meta.orient==='landscape'?'8 à 10':'6 à 8')+' encadrés courts).\n'+st+'\n'+
+    (c.tech?'Utilise le vocabulaire technique exact du DSCG (termes juridiques, comptables, financiers) et cite les références (articles, normes) quand elles figurent dans les documents.\n':'Utilise un vocabulaire simple et accessible.\n')+
+    'Éléments à privilégier : '+c.parts.map(function(p){ var x=AI_PARTS.filter(function(q){ return q[0]===p; })[0]; return x?x[1]:p; }).join(', ')+'.\n'+
+    (meta.plan?'Position dans le plan : '+meta.plan+'\n':'')+(c.extra?'Consignes supplémentaires : '+c.extra+'\n':'')+
+    'Les '+AIW.imgs.length+' documents ci-dessus sont dans l’ordre du cours.';
+  return { sys:sys, user:u };
+}
+function aiParse(txt){ var a=txt.indexOf('{'), b=txt.lastIndexOf('}'); if(a<0||b<a) throw new Error('Réponse illisible'); var d=JSON.parse(txt.slice(a,b+1)); if(!d || !Array.isArray(d.pages)) throw new Error('Réponse incomplète');
+  d.pages=d.pages.map(function(p){ return { plan:String(p.plan||''), blocs:(Array.isArray(p.blocs)?p.blocs:[]).filter(function(b){ return b && b.type; }).map(function(b){ var o={ type:String(b.type) }; ['texte','nature','libelle','plan'].forEach(function(k){ if(b[k]!=null) o[k]=String(b[k]); }); if(Array.isArray(b.lignes)) o.lignes=b.lignes.map(function(r){ return (Array.isArray(r)?r:[r]).map(function(c){ return String(c==null?'':c); }); }); return o; }) }; });
+  return { titre:String(d.titre||''), pages:d.pages }; }
+
+function aiGenerate(){
+  if(AIW.busy) return; var meta=aiMeta(); if(!meta.title){ toast('Indique le titre du chapitre (étape 2).'); var t=$('#aiTitle'); if(t) t.focus(); return; }
+  if(!AIW.imgs.length){ toast('Ajoute au moins une photo ou un PDF de ton cours (étape 3).'); return; }
+  aiKeyInfo().then(function(ki){ if(!ki || !ki.has){ toast('Enregistre d’abord ta clé API (étape 1).'); var k=$('#aiKey'); if(k) k.focus(); return; }
+    var c=aiCfg(), pr=aiPrompt(meta), content=AIW.imgs.map(function(x){ return x.kind==='pdf'?{ type:'document', source:{ type:'base64', media_type:'application/pdf', data:x.data } }:{ type:'image', source:{ type:'base64', media_type:x.media, data:x.data } }; });
+    content.push({ type:'text', text:pr.user });
+    var body={ model:c.model, max_tokens:16000, system:pr.sys, messages:[{ role:'user', content:content }] };
+    AIW.busy=true; AIW.ctrl=window.AbortController?new AbortController():null; var t0=Date.now(), st=$('#aiRun');
+    var tick=setInterval(function(){ if(st) st.innerHTML='<span class="aispin"></span> Lecture des documents et rédaction… '+Math.round((Date.now()-t0)/1000)+' s <button type="button" class="btn sm ghost" id="aiStop">Annuler</button>'; var sb=$('#aiStop'); if(sb) sb.onclick=function(){ AIW.cancel=true; if(AIW.ctrl) AIW.ctrl.abort(); }; }, 500);
+    AIW.cancel=false; var gb=$('#aiGo'); if(gb) gb.disabled=true;
+    aiPost(body, AIW.ctrl && AIW.ctrl.signal).then(function(r){
+      clearInterval(tick); AIW.busy=false; if(gb) gb.disabled=false;
+      if(AIW.cancel){ if(st) st.textContent='Annulé.'; return; }
+      if(r.status!==200){ if(st) st.innerHTML='<span class="aierr">'+esc(aiErr(r.status, r.body))+'</span>'; return; }
+      var j=JSON.parse(r.body), txt=(j.content||[]).filter(function(x){ return x.type==='text'; }).map(function(x){ return x.text; }).join(''), u=j.usage||{}, m=AI_MODELS[c.model];
+      var cost=(u.input_tokens||0)/1e6*m.pin+(u.output_tokens||0)/1e6*m.pout+(u.cache_creation_input_tokens||0)/1e6*m.pin*1.25+(u.cache_read_input_tokens||0)/1e6*m.pin*0.05;
+      var h=aiCfg().history.slice(); h.push({ t:Date.now(), title:meta.title, model:c.model, inTok:u.input_tokens||0, outTok:u.output_tokens||0, cost:Math.round(cost*10000)/10000, docs:AIW.imgs.length }); aiSave({ history:h });
+      var d; try{ d=aiParse(txt); }catch(e){ if(st) st.innerHTML='<span class="aierr">La réponse n’a pas pu être lue ('+esc(e.message)+'). Coût : '+money(cost)+'. Réessaie, éventuellement avec moins de documents.</span>'; aiDrawCredits(); return; }
+      if(!d.titre) d.titre=meta.title; AIW.draft=d; AIW.cfg=meta; aiStoreDraft();
+      if(st) st.innerHTML='Pré-fiche prête en '+Math.round((Date.now()-t0)/1000)+' s · coût réel '+money(cost)+' ('+(u.input_tokens||0)+' + '+(u.output_tokens||0)+' tokens'+(j.stop_reason==='max_tokens'?', réponse coupée : réduis le nombre de pages':'')+').';
+      aiDrawCredits(); aiDrawDraft(); var s6=$('#aiStep6'); if(s6) s6.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, function(e){ clearInterval(tick); AIW.busy=false; if(gb) gb.disabled=false; if(st) st.innerHTML='<span class="aierr">'+(AIW.cancel?'Annulé.':'Connexion à l’API impossible. Vérifie ta connexion internet.'+(window.fichesAI?'':' Dans la version en ligne ouverte dans Claude, les appels externes sont bloqués : utilise l’exe ou la version GitHub.'))+'</span>'; });
+  });
+}
+function aiMeta(){ var g=function(id){ var e=$(id); return e?e.value:''; }; return { title:g('#aiTitle').trim(), ue:g('#aiUe')||'UE1', orient:g('#aiOr')||'landscape', size:g('#aiSz')||'A4', plan:g('#aiPlan').trim() }; }
+function aiStoreDraft(){ try{ localStorage.setItem(AI_DRAFT, JSON.stringify({ d:AIW.draft, c:AIW.cfg })); }catch(e){} }
+
+/* ---- construction de la fiche ---- */
+function aiBuildFiche(d, meta){
+  var f=newFiche(meta.ue, d.titre||meta.title, ''); f.pages=[]; var host=document.createElement('div'); host.style.cssText='position:fixed;left:-20000px;top:0;visibility:hidden'; document.body.appendChild(host);
+  var mkPage=function(plan){ var p=newPage(meta.orient==='landscape'?'landscape':null); if(meta.size && meta.size!=='A4') p.size=meta.size; if(plan) p.crumb=plan; f.pages.push(p); return p; };
+  var measure=function(it, p){ useDims(p); var pg=document.createElement('div'); pg.className='page'; pg.style.width=PW+'px'; pg.style.height=PH+'px'; host.innerHTML=''; host.appendChild(pg); var el=buildItem(it, f, {}); pg.appendChild(el); return el.offsetHeight; };
+  var toItem=function(b){ var tx=b.texte||'';
+    if(b.type==='titre') return { id:uid(), type:'text', size:'h2', text:tx };
+    if(b.type==='texte') return { id:uid(), type:'text', size:'body', text:tx };
+    if(b.type==='formule') return { id:uid(), type:'formula', label:b.libelle||'', text:tx };
+    if(b.type==='tableau'){ var rows=(b.lignes||[]).filter(function(r){ return r.length; }); if(!rows.length) return null; var n=Math.max.apply(null, rows.map(function(r){ return r.length; })); rows=rows.map(function(r){ r=r.slice(); while(r.length<n) r.push(''); return r; }); return { id:uid(), type:'table', header:rows.length>1, rows:rows }; }
+    if(b.type==='encadre'){ var k=BOXK[b.nature]?b.nature:'retenir'; return { id:uid(), type:'box', kind:k, text:tx }; }
+    return null; };
+  (d.pages||[]).forEach(function(lp){
+    var P=mkPage(lp.plan), schemas=[];
+    var flow=function(){ var pi=f.pages.length-1; useDims(P); var top=contentTop(pi)+6, ncol=(isLand(P)&&PW>900)?2:1, gap=16; return { top:top, bottom:CONTENT_BOTTOM-4, n:ncol, gap:gap, cw:(PW-2*M-gap*(ncol-1))/ncol, y:[top,top,top].slice(0,ncol) }; };
+    var F=flow();
+    (lp.blocs||[]).forEach(function(b){
+      if(b.type==='schema'){ if(b.plan) schemas.push(b.plan); return; }
+      var it=toItem(b); if(!it) return;
+      var full=(it.type==='table'||(it.type==='text'&&it.size==='h2')||F.n===1), place=function(){ var c=0; if(!full){ for(var q=1;q<F.n;q++) if(F.y[q]<F.y[c]) c=q; } var y=full?Math.max.apply(null,F.y):F.y[c]; it.x=Math.round(full?M:M+c*(F.cw+F.gap)); it.y=Math.round(y); it.w=Math.round(full?PW-2*M:F.cw); return c; };
+      var c=place(), h=measure(it, P);
+      if(it.y+h>F.bottom && P.items.length){ P=mkPage(lp.plan); F=flow(); c=place(); h=measure(it, P); }
+      P.items.push(it);
+      if(full){ var ny=it.y+h+F.gap; F.y=F.y.map(function(){ return ny; }); } else F.y[c]=it.y+h+F.gap;
+    });
+    schemas.forEach(function(pl){ var SP=(!P.items.length && !P.plan)?P:mkPage(lp.plan); SP.plan=pl; SP.layout='arbre'; generate(f, f.pages.indexOf(SP)); });
+  });
+  if(!f.pages.length) mkPage('');
+  host.remove(); f.updated=Date.now(); return f;
+}
+
+/* ---- pré-fiche : liste modifiable + aperçu ---- */
+var aiPrevT=0;
+function aiDrawDraft(){
+  var box=$('#aiStep6'); if(!box) return; var d=AIW.draft;
+  if(!d){ box.hidden=true; $('#aiStep7').hidden=true; return; } box.hidden=false; $('#aiStep7').hidden=false;
+  var opt=function(list, cur){ return list.map(function(o){ return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); };
+  var h='<label class="aif">Titre de la fiche<input id="aiDT" type="text" value="'+esc(d.titre)+'"></label>';
+  d.pages.forEach(function(p, pi){
+    h+='<div class="aipg"><div class="aipgh"><b>Page '+(pi+1)+'</b><input type="text" data-dp="'+pi+'" value="'+esc(p.plan)+'" placeholder="Où on en est dans le plan" aria-label="Position dans le plan, page '+(pi+1)+'"><button type="button" class="kclr" data-dpx="'+pi+'" title="Supprimer la page" aria-label="Supprimer la page '+(pi+1)+'">×</button></div>';
+    p.blocs.forEach(function(b, bi){ var id=pi+':'+bi, val=b.type==='tableau'?(b.lignes||[]).map(function(r){ return r.join(' | '); }).join('\n'):(b.type==='schema'?(b.plan||''):(b.texte||''));
+      h+='<div class="aibl"><div class="aiblh"><select data-bt="'+id+'" aria-label="Type de bloc">'+opt(AI_BTYPES, b.type)+'</select>'+(b.type==='encadre'?'<select data-bn="'+id+'" aria-label="Nature de l’encadré">'+opt(AI_NATURES, b.nature)+'</select>':'')+(b.type==='formule'?'<input type="text" data-bl="'+id+'" value="'+esc(b.libelle||'')+'" placeholder="Nom de la formule">':'')+
+        '<span style="flex:1"></span><button type="button" class="kclr" data-bm="'+id+':-1" title="Monter" aria-label="Monter">↑</button><button type="button" class="kclr" data-bm="'+id+':1" title="Descendre" aria-label="Descendre">↓</button><button type="button" class="kclr" data-bx="'+id+'" title="Supprimer" aria-label="Supprimer le bloc">×</button></div>'+
+        '<textarea data-bv="'+id+'" rows="'+Math.min(10,Math.max(2,val.split('\n').length+1))+'" placeholder="'+(b.type==='tableau'?'Une ligne par rangée, cellules séparées par |':(b.type==='schema'?'Une ligne par élément, 2 espaces de retrait par niveau':'Texte (**gras**, - puces)'))+'">'+esc(val)+'</textarea></div>'; });
+    h+='<button type="button" class="btn sm ghost" data-badd="'+pi+'">'+ico(I.plus)+'Ajouter un bloc</button></div>'; });
+  h+='<button type="button" class="btn sm" id="aiPgAdd">'+ico(I.plus)+'Ajouter une page</button>';
+  $('#aiEd').innerHTML=h; aiBindDraft(); aiPreview();
+}
+function aiBindDraft(){
+  var ed=$('#aiEd'), d=AIW.draft, ch=function(redraw){ aiStoreDraft(); clearTimeout(aiPrevT); aiPrevT=setTimeout(aiPreview, 450); if(redraw) aiDrawDraft(); };
+  var ref=function(id){ var q=id.split(':'); return d.pages[+q[0]].blocs[+q[1]]; };
+  $('#aiDT').oninput=function(){ d.titre=this.value; ch(); };
+  $$('[data-dp]',ed).forEach(function(x){ x.oninput=function(){ d.pages[+x.getAttribute('data-dp')].plan=x.value; ch(); }; });
+  $$('[data-dpx]',ed).forEach(function(x){ x.onclick=function(){ if(d.pages.length<2){ toast('Garde au moins une page.'); return; } d.pages.splice(+x.getAttribute('data-dpx'),1); ch(true); }; });
+  $$('[data-bv]',ed).forEach(function(x){ x.oninput=function(){ var b=ref(x.getAttribute('data-bv')), v=x.value; if(b.type==='tableau') b.lignes=v.split('\n').filter(function(l){ return l.trim(); }).map(function(l){ return l.split('|').map(function(c){ return c.trim(); }); }); else if(b.type==='schema') b.plan=v; else b.texte=v; ch(); }; x.onkeydown=function(e){ e.stopPropagation(); }; });
+  $$('[data-bl]',ed).forEach(function(x){ x.oninput=function(){ ref(x.getAttribute('data-bl')).libelle=x.value; ch(); }; });
+  $$('[data-bn]',ed).forEach(function(x){ x.onchange=function(){ ref(x.getAttribute('data-bn')).nature=x.value; ch(); }; });
+  $$('[data-bt]',ed).forEach(function(x){ x.onchange=function(){ var b=ref(x.getAttribute('data-bt')), old=b.type==='tableau'?(b.lignes||[]).map(function(r){ return r.join(' | '); }).join('\n'):(b.type==='schema'?b.plan:b.texte)||''; b.type=x.value; delete b.lignes; delete b.plan; delete b.texte;
+    if(b.type==='tableau') b.lignes=old.split('\n').filter(Boolean).map(function(l){ return l.split('|').map(function(c){ return c.trim(); }); }); else if(b.type==='schema') b.plan=old; else b.texte=old; if(b.type==='encadre' && !b.nature) b.nature='retenir'; ch(true); }; });
+  $$('[data-bm]',ed).forEach(function(x){ x.onclick=function(){ var q=x.getAttribute('data-bm').split(':'), arr=d.pages[+q[0]].blocs, i=+q[1], j=i+(+q[2]); if(j<0||j>=arr.length) return; var t=arr[i]; arr[i]=arr[j]; arr[j]=t; ch(true); }; });
+  $$('[data-bx]',ed).forEach(function(x){ x.onclick=function(){ var q=x.getAttribute('data-bx').split(':'); d.pages[+q[0]].blocs.splice(+q[1],1); ch(true); }; });
+  $$('[data-badd]',ed).forEach(function(x){ x.onclick=function(){ d.pages[+x.getAttribute('data-badd')].blocs.push({ type:'encadre', nature:'retenir', texte:'' }); ch(true); }; });
+  $('#aiPgAdd').onclick=function(){ d.pages.push({ plan:'', blocs:[{ type:'encadre', nature:'retenir', texte:'' }] }); ch(true); };
+}
+function aiPreview(){
+  var pv=$('#aiPrev'); if(!pv || !AIW.draft) return; var f=aiBuildFiche(AIW.draft, AIW.cfg||aiMeta()); pv.innerHTML='';
+  var W=Math.max(200, pv.clientWidth-4);
+  f.pages.forEach(function(p,i){ useDims(p); var pw=document.createElement('div'); pw.className='pw aipw'; var pg=document.createElement('div'); pw.appendChild(pg); pv.appendChild(pw); renderPage(pg,f,i,{}); var sc=Math.min(1,W/PW); pw.style.width=(PW*sc)+'px'; pw.style.height=(PH*sc)+'px'; pg.style.transform='scale('+sc+')'; pg.style.transformOrigin='0 0'; });
+  var n=$('#aiPrevN'); if(n) n.textContent=f.pages.length+' page'+(f.pages.length>1?'s':'');
+}
+function aiImport(){
+  if(!AIW.draft) return; var f=aiBuildFiche(AIW.draft, AIW.cfg||aiMeta()); S.fiches.push(f); Store.saveFiche(f,true);
+  AIW.draft=null; try{ localStorage.removeItem(AI_DRAFT); }catch(e){} AIW.imgs=[]; toast('Fiche « '+f.title+' » ajoutée à tes fiches.'); location.hash='#edit-'+f.id; }
+
+/* ---- crédits ---- */
+function aiDrawCredits(){
+  var el=$('#aiCred'); if(!el) return; var c=aiCfg(), sp=aiSpent(), rest=c.budget-sp, pct=c.budget?clamp(rest/c.budget,0,1):0, cls=!c.budget?'':(rest<0.5?' low':(pct<0.25?' mid':''));
+  var hist=c.history.slice().reverse();
+  el.innerHTML='<div class="aicr'+cls+'"><div><div class="aimut">Solde restant (suivi par l’outil)</div><div class="aibig">'+(c.budget?money(rest):'—')+'</div></div><div class="aicrs"><div><span class="aimut">Crédits déclarés</span><b>'+money(c.budget)+'</b></div><div><span class="aimut">Dépensé</span><b>'+money(sp)+'</b></div><div><span class="aimut">Fiches générées</span><b>'+c.history.length+'</b></div></div></div>'+
+    (c.budget?'<div class="aibar"><i style="width:'+(pct*100)+'%"></i></div>':'')+
+    '<div class="airow"><label class="aif" style="flex:0 1 200px">Crédits achetés ($)<input type="number" min="0" step="1" id="aiAdd" placeholder="ex. 10"></label><button type="button" class="btn sm" id="aiAddB">'+ico(I.plus)+'Ajouter au solde</button><button type="button" class="btn sm ghost" id="aiSetB">Corriger le solde…</button><a class="btn sm ghost" href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener">Voir mon solde officiel ↗</a></div>'+
+    (hist.length?'<details class="aihist"><summary>Historique ('+hist.length+')</summary><table><thead><tr><th>Date</th><th>Fiche</th><th>Modèle</th><th>Tokens</th><th>Coût</th></tr></thead><tbody>'+hist.slice(0,50).map(function(h){ return '<tr><td>'+new Date(h.t).toLocaleDateString('fr-FR')+' '+hm(new Date(h.t))+'</td><td>'+esc(h.title||'')+'</td><td>'+esc((h.model||'').replace('claude-',''))+'</td><td>'+(h.inTok||0)+' + '+(h.outTok||0)+'</td><td>'+money(h.cost||0)+'</td></tr>'; }).join('')+'</tbody></table></details>':'');
+  $('#aiAddB').onclick=function(){ var v=parseFloat(String($('#aiAdd').value).replace(',','.')); if(!(v>0)){ toast('Indique le montant acheté, en dollars.'); return; } aiSave({ budget:Math.round((aiCfg().budget+v)*100)/100 }); aiDrawCredits(); aiDrawEstimate(); toast(money(v)+' ajoutés au solde suivi.'); };
+  $('#aiSetB').onclick=function(){ var v=prompt('Solde actuel affiché dans ta console Anthropic (en $) :', String(Math.max(0,Math.round(rest*100)/100))); if(v==null) return; var n=parseFloat(String(v).replace(',','.')); if(!(n>=0)) return; aiSave({ budget:Math.round((n+aiSpent())*100)/100 }); aiDrawCredits(); aiDrawEstimate(); };
+}
+function aiDrawKey(){
+  var el=$('#aiKeyBox'); if(!el) return;
+  aiKeyInfo().then(function(ki){ AIW.keyInfo=ki;
+    el.innerHTML=ki&&ki.has?'<div class="airow"><span class="aiok">'+ico('<path d="M5 12l5 5L20 7"/>')+'Clé API enregistrée sur cet appareil (…'+esc(ki.tail||'')+')</span><button type="button" class="btn sm ghost" id="aiKeyDel">Supprimer la clé</button></div>'
+      :'<div class="airow"><label class="aif" style="flex:1 1 320px">Clé API Anthropic<input type="password" id="aiKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"></label><button type="button" class="btn sm pri" id="aiKeySave">Enregistrer la clé</button><a class="btn sm ghost" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Créer une clé ↗</a></div><p class="aimut" style="margin:6px 0 0">La clé reste sur cet appareil'+(window.fichesAI?' (chiffrée par Windows)':' (dans ce navigateur)')+' et n’est envoyée qu’à Anthropic.</p>';
+    var sv=$('#aiKeySave'); if(sv) sv.onclick=function(){ var k=$('#aiKey').value.trim(); if(!/^sk-ant-/.test(k)){ toast('La clé doit commencer par « sk-ant- ».'); return; } aiKeySet(k).then(function(){ toast('Clé enregistrée.'); aiDrawKey(); }); };
+    var kk=$('#aiKey'); if(kk) kk.onkeydown=function(e){ e.stopPropagation(); if(e.key==='Enter') sv.click(); };
+    var dl=$('#aiKeyDel'); if(dl) dl.onclick=function(){ aiKeyDel().then(function(){ toast('Clé supprimée de cet appareil.'); aiDrawKey(); }); };
+  });
+}
+
+function viewAI(){
+  var v=$('#view'), c=aiCfg(), last=AIW.cfg||{}, opt=function(list,cur){ return list.map(function(o){ return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); };
+  if(!AIW.draft){ try{ var sd=JSON.parse(localStorage.getItem(AI_DRAFT)||'null'); if(sd && sd.d){ AIW.draft=sd.d; AIW.cfg=sd.c; last=sd.c||{}; } }catch(e){} }
+  var step=function(n,t,body,id){ return '<section class="panel aistep"'+(id?' id="'+id+'"':'')+'><div class="aisth"><span class="ainum">'+n+'</span><h2>'+t+'</h2></div>'+body+'</section>'; };
+  v.innerHTML='<div class="wrap aiwrap"><div class="ptitle"><h1 id="hai">Rédiger une fiche avec l’IA</h1><p>Photos de tes cours → pré-fiche rédigée par Claude → tu ajustes → la fiche rejoint tes fiches.</p></div>'+
+    step(1,'Crédits et clé API','<div id="aiCred"></div><div id="aiKeyBox" style="margin-top:14px"></div>')+
+    step(2,'La fiche','<div class="aigrid"><label class="aif" style="grid-column:1/-1">Titre du chapitre<input id="aiTitle" type="text" value="'+esc(last.title||'')+'" placeholder="ex. Les provisions pour risques et charges"></label>'+
+      '<label class="aif">UE<select id="aiUe">'+UE_KEYS.map(function(k){ return '<option value="'+k+'"'+((last.ue||'UE1')===k?' selected':'')+'>'+k+' · '+esc(ueOf(k).name)+'</option>'; }).join('')+'</select></label>'+
+      '<label class="aif">Orientation<select id="aiOr">'+opt([['landscape','Paysage'],['portrait','Portrait']], last.orient||(S.settings.defOrient==='portrait'?'portrait':'landscape'))+'</select></label>'+
+      '<label class="aif">Format<select id="aiSz">'+Object.keys(SIZES).map(function(k){ return '<option value="'+k+'"'+((last.size||'A4')===k?' selected':'')+'>'+SIZES[k].lab+'</option>'; }).join('')+'</select></label>'+
+      '<label class="aif">Nombre de pages visé<select id="aiPages">'+[1,2,3,4,5,6].map(function(n){ return '<option value="'+n+'"'+(c.pages===n?' selected':'')+'>'+n+'</option>'; }).join('')+'</select></label>'+
+      '<label class="aif" style="grid-column:1/-1">Où on en est dans le plan (facultatif)<input id="aiPlan" type="text" value="'+esc(last.plan||'')+'" placeholder="ex. Partie 2 > Chapitre 1"></label></div>'+
+      '<div class="aimut" style="margin:10px 0 6px">Éléments à privilégier</div><div class="aichips">'+AI_PARTS.map(function(p){ return '<label class="aichip"><input type="checkbox" data-part="'+p[0]+'"'+(c.parts.indexOf(p[0])>=0?' checked':'')+'>'+p[1]+'</label>'; }).join('')+'</div>')+
+    step(3,'Tes cours','<div class="aidrop" id="aiDrop" tabindex="0" role="button" aria-label="Ajouter des photos ou des PDF de ton cours">'+ico('<path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/>')+'<b>Glisse ici tes photos de cours ou tes PDF</b><span>ou clique pour les choisir · Ctrl+V pour coller une capture · 20 documents maximum</span><input type="file" id="aiFile" accept="image/*,application/pdf" multiple hidden></div><div class="aimut" id="aiImgN" style="margin:10px 0 6px"></div><div class="aiimgs" id="aiImgs"></div>')+
+    step(4,'Style de rédaction','<div class="seg" role="group" aria-label="Style de rédaction" id="aiStyle">'+[['synth','Synthétique'],['standard','Standard'],['detail','Détaillé']].map(function(o){ return '<button type="button" data-sty="'+o[0]+'" class="'+(c.style===o[0]?'on':'')+'" aria-pressed="'+(c.style===o[0])+'">'+o[1]+'</button>'; }).join('')+'</div>'+
+      '<p class="aimut" id="aiStyD" style="margin:8px 0 10px"></p><label class="aichip" style="display:inline-flex"><input type="checkbox" id="aiTech"'+(c.tech?' checked':'')+'>Vocabulaire technique DSCG et références (articles, normes)</label>'+
+      '<label class="aif" style="margin-top:12px">Consignes supplémentaires (facultatif)<textarea id="aiExtra" rows="2" placeholder="ex. Insiste sur les conditions de comptabilisation ; ajoute un tableau provision / dette.">'+esc(c.extra)+'</textarea></label>'+
+      '<label class="aif" style="margin-top:12px;max-width:380px">Modèle<select id="aiModel">'+Object.keys(AI_MODELS).map(function(k){ return '<option value="'+k+'"'+(c.model===k?' selected':'')+'>'+AI_MODELS[k].l+'</option>'; }).join('')+'</select></label>')+
+    step(5,'Générer la pré-fiche','<div id="aiEst" class="aiest"></div><div class="airow" style="margin-top:12px"><button type="button" class="btn pri" id="aiGo">'+ico('<path d="M12 3l1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/>')+'Générer la pré-fiche</button><div id="aiRun" class="aimut" role="status" aria-live="polite"></div></div>')+
+    '<section class="panel aistep" id="aiStep6" hidden><div class="aisth"><span class="ainum">6</span><h2>Ajuste la pré-fiche</h2><span class="aimut" style="margin-left:auto">Les modifications sont gratuites : seule la génération consomme des crédits.</span></div><div class="aitwo"><div id="aiEd" class="aied"></div><div class="aiprevw"><div class="aimut" style="margin-bottom:6px">Aperçu · <span id="aiPrevN"></span></div><div id="aiPrev" class="aiprev"></div></div></div></section>'+
+    '<section class="panel aistep" id="aiStep7" hidden><div class="aisth"><span class="ainum">7</span><h2>Valider</h2></div><div class="airow"><button type="button" class="btn pri" id="aiImp">'+ico('<path d="M5 12l5 5L20 7"/>')+'Valider et ajouter à mes fiches</button><button type="button" class="btn ghost" id="aiRegen">Régénérer (nouveau coût)</button><button type="button" class="btn ghost" id="aiDrop2">Abandonner cette pré-fiche</button></div><p class="aimut" style="margin:8px 0 0">La fiche s’ouvre ensuite dans l’éditeur, avec tous les outils habituels.</p></section></div>';
+  aiDrawCredits(); aiDrawKey(); aiDrawImgs(); aiDrawEstimate();
+  var SD={ synth:'Mots-clés, phrases très courtes et puces : idéal pour réviser vite.', standard:'Phrases courtes et claires, avec des puces quand c’est utile.', detail:'Explications complètes : mécanismes, conditions, exceptions et exemples.' };
+  var syncSty=function(){ $('#aiStyD').textContent=SD[aiCfg().style]; }; syncSty();
+  $$('[data-sty]').forEach(function(b){ b.onclick=function(){ aiSave({ style:b.getAttribute('data-sty') }); $$('[data-sty]').forEach(function(x){ var on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); }); syncSty(); aiDrawEstimate(); }; });
+  $('#aiTech').onchange=function(){ aiSave({ tech:this.checked }); };
+  $('#aiExtra').onchange=function(){ aiSave({ extra:this.value.trim() }); };
+  $('#aiModel').onchange=function(){ aiSave({ model:this.value }); aiDrawEstimate(); };
+  $('#aiPages').onchange=function(){ aiSave({ pages:+this.value }); aiDrawEstimate(); };
+  $$('[data-part]').forEach(function(x){ x.onchange=function(){ aiSave({ parts:$$('[data-part]').filter(function(q){ return q.checked; }).map(function(q){ return q.getAttribute('data-part'); }) }); }; });
+  var dz=$('#aiDrop'), fi=$('#aiFile');
+  dz.onclick=function(){ fi.click(); }; dz.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fi.click(); } };
+  fi.onchange=function(){ aiAddFiles(fi.files); fi.value=''; };
+  dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('over'); }); dz.addEventListener('dragleave', function(){ dz.classList.remove('over'); });
+  dz.addEventListener('drop', function(e){ e.preventDefault(); dz.classList.remove('over'); aiAddFiles(e.dataTransfer.files); });
+  document.onpaste=function(e){ if(!/^#rediger/.test(location.hash)) return; var it=(e.clipboardData||{}).files; if(it && it.length){ e.preventDefault(); aiAddFiles(it); } };
+  $('#aiGo').onclick=aiGenerate; $('#aiRegen').onclick=aiGenerate;
+  $('#aiImp').onclick=aiImport;
+  $('#aiDrop2').onclick=function(){ if(!confirm('Abandonner cette pré-fiche ? Elle ne sera pas ajoutée à tes fiches.')) return; AIW.draft=null; try{ localStorage.removeItem(AI_DRAFT); }catch(e){} aiDrawDraft(); };
+  aiDrawDraft();
+}
+
 function viewRead(id){
   var f=getFiche(id), v=$('#view');
   if(!f){ v.innerHTML='<div class="wrap"><div class="empty">Cette fiche n’existe plus. <a class="btn sm" href="#fiches">Mes fiches</a></div></div>'; return; }
