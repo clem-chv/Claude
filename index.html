@@ -1715,15 +1715,13 @@ function openHeaderPop(btn){
   m.innerHTML='<div class="lab" style="margin-bottom:10px">En-tête · page '+(ED.pi+1)+'</div>'+
     '<label class="f">Titre de la fiche<input id="hdT" type="text" value="'+esc(f.title||'')+'"></label>'+
     '<label class="f">Thème ou chapitre (à côté du nom de l’UE)<input id="hdTh" type="text" value="'+esc(f.theme||'')+'"></label>'+
-    '<label class="f">Où on en est dans le plan<input id="hdC" type="text" value="'+esc(own?p.crumb:(f.crumb||''))+'" placeholder="ex. Partie 2 > Chapitre 1 > Section A"></label>'+
-    '<label class="c"><input type="checkbox" id="hdAll"'+(own?'':' checked')+'>Le même sur toutes les pages de la fiche</label>'+
+    '<label class="f">Où on en est dans le plan (cette page)<input id="hdC" type="text" value="'+esc(own?p.crumb:(f.crumb||''))+'" placeholder="ex. Partie 2 > Chapitre 1 > Section A"></label>'+
     '<div style="border-top:1px solid var(--border);margin:8px 0"></div>'+
     '<label class="c"><input type="checkbox" id="hdUe"'+(hd.noUe?'':' checked')+'>Afficher le nom de l’UE</label>'+
     '<label class="c"><input type="checkbox" id="hdD"'+(hd.noDate?'':' checked')+'>Afficher la date de mise à jour</label>'+
     '<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Astuce : écris « > » entre les niveaux, il devient « › ». Double-clic sur l’en-tête pour rouvrir ce panneau.</p>';
   var snap=false, sv=function(){ if(!snap){ pushHist(); snap=true; } };
-  var apply=function(){ sv(); f.title=m.querySelector('#hdT').value; f.theme=m.querySelector('#hdTh').value; var cv=m.querySelector('#hdC').value, all=m.querySelector('#hdAll').checked;
-    if(all){ f.crumb=cv; f.pages.forEach(function(x){ delete x.crumb; }); } else { p.crumb=cv; }
+  var apply=function(){ sv(); f.title=m.querySelector('#hdT').value; f.theme=m.querySelector('#hdTh').value; var cv=m.querySelector('#hdC').value; p.crumb=cv;
     f.hdr={}; if(!m.querySelector('#hdUe').checked) f.hdr.noUe=true; if(!m.querySelector('#hdD').checked) f.hdr.noDate=true; if(!Object.keys(f.hdr).length) delete f.hdr;
     var et=$('#eTitle'); if(et) et.value=f.title; var eth=$('#eTheme'); if(eth) eth.value=f.theme||''; touch(); drawPage(); };
   m.addEventListener('input', apply); m.addEventListener('change', apply);
