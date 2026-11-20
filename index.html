@@ -18,6 +18,8 @@ html[data-theme="sombre"] .tb:hover,html[data-theme="sombre"] .menu-pop button:h
 html[data-theme="sombre"] .rtab.fmt.has,html[data-theme="sombre"] .rtab.fmt.on{color:#8AA8FF;border-bottom-color:#8AA8FF}
 html[data-theme="sombre"] .toast{background:#ECECE8;color:#17181A}
 .thb{width:38px;min-height:38px;padding:0}
+.tbl .dg1{text-align:right;padding-left:35%;white-space:nowrap}
+.tbl .dg2{text-align:left;padding-right:35%;margin-top:8px;white-space:nowrap}
 .tsepc,.tsepr{position:absolute;z-index:6;touch-action:none}
 .tsepc{top:0;width:8px;cursor:col-resize;z-index:7}
 .tsepr{left:0;height:8px;cursor:row-resize}
@@ -802,7 +804,8 @@ function buildItem(it, f, opts){
         var head=it.header && ri===0, first=ci===0 && !head, sp=spans[ri+','+ci], cbg=bgs[ri+','+ci];
         var st='border-top:'+(ri?'1px solid '+mixWhite(c,0.3):'0')+';'+(head?'background:'+c+';color:'+onColor(c)+';font-weight:700;':'')+(first?'background:'+mixWhite(c,0.1)+';font-weight:600;':'')+(!head && it.textColor?'color:'+it.textColor+';':'')+(cbg?'background:'+cbg+';color:'+(onColor(cbg)==='#FFFFFF'?'#FFFFFF':'inherit')+';':'');
         var at=sp?((sp.cs>1?' colspan="'+Math.min(sp.cs,nC-ci)+'"':'')+(sp.rs>1?' rowspan="'+Math.min(sp.rs,nR-ri)+'"':'')):'';
-        var body=it.rich?cleanHtml(cell):rich(cell);
+        var body=it.rich?cleanHtml(cell):rich(cell), dg=it.diag&&it.diag[ri+','+ci];
+        if(dg){ var lc=head?onColor(c):mixWhite(c,0.35); st+='background-image:linear-gradient(to top right,transparent 49.4%,'+lc+' 49.6%,'+lc+' 50.4%,transparent 50.6%);'; if(!editing){ var parts=String(body).split(/<br\s*\/?>|\n/i); body='<div class="dg1">'+(parts[0]||'')+'</div><div class="dg2">'+parts.slice(1).join('<br>')+'</div>'; } }
         t+='<td style="'+st+'"'+at+(editing?' contenteditable="true" data-r="'+ri+'" data-c="'+ci+'"':'')+'>'+body+'</td>';
       }); t+='</tr>';
     });
@@ -1327,6 +1330,7 @@ function viewEdit(id){
   $('#eSave').onclick=saveNow;
   $('#ePdf').onclick=function(){ commitEdit(); exportPDF([f], f.title); };
   $('#tUndo').onclick=undo; $('#tRedo').onclick=redo; bindFicheNav($('.ehead'));
+  [$('.rtabs'), $('#rBody')].forEach(function(bar){ if(bar) bar.addEventListener('mousedown', function(e){ if(ED && ED.editing && e.target.closest('button') && !e.target.closest('input,select')) e.preventDefault(); }); });
   ED.tab='home'; ED.lastTab='home'; ED.ctx0=false; renderRibbon();
   var page=$('#page');
   page.addEventListener('pointerdown', function(e){ var lk=e.target.closest('.lnk'); var itx=e.target.closest('[data-id]'); var fi=itx?findItem(curPage(), itx.getAttribute('data-id')):null;
@@ -1339,7 +1343,7 @@ function viewEdit(id){
   page.addEventListener('pointermove', onMove);
   page.addEventListener('pointerup', onUp);
   page.addEventListener('pointercancel', onUp);
-  page.addEventListener('focusout', function(){ setTimeout(function(){ if(ED && ED.editing){ var el=$('#page [data-id="'+ED.editing+'"]'); var ae=document.activeElement; if(ae && ae.closest && (ae.closest('#props') || ae.closest('.menu-pop'))) return; if(!el || !el.contains(ae)) commitEdit(); } },0); });
+  page.addEventListener('focusout', function(){ setTimeout(function(){ if(ED && ED.editing){ var el=$('#page [data-id="'+ED.editing+'"]'); var ae=document.activeElement; if(ae && ae.closest && (ae.closest('#props') || ae.closest('.menu-pop') || ae.closest('#rBody') || ae.closest('.rtabs'))) return; if(!el || !el.contains(ae)) commitEdit(); } },0); });
   if(window.ResizeObserver){ new ResizeObserver(function(){ fitPage(); }).observe($('#stage')); }
   $('#stage').addEventListener('wheel', function(e){ if(e.ctrlKey||e.metaKey){ e.preventDefault(); setZoom(e.deltaY<0?0.1:-0.1); } }, {passive:false});
   drawPlan(); drawPage(); drawProps(); drawStrip(); fitPage();
@@ -1450,7 +1454,7 @@ function drawProps0(){
         fontSelect('', 'eFf', 'data-ifont="1"')+sizeSelect(curPt(ei), 'eFs', 'data-isize="1"', 'Taille du texte sélectionné (pt)')+
         (ei.type!=='node'&&ei.type!=='shape'?'<button class="tb" data-fmt="insertUnorderedList" title="Liste à puces">'+ico('<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>')+'Puces</button><button class="tb" data-fmt="insertOrderedList" title="Liste numérotée">'+ico('<path d="M10 6h10M10 12h10M10 18h10M4 5h1v3M4 11h2l-2 3h2M4 17h2v3H4"/>')+'1. 2. 3.</button>':'')+
         '<button class="tb" data-fmt="removeFormat" title="Retirer la mise en forme">Effacer</button>'+alignButtons(ei).replace(/data-p="/g,'data-ealign="')+
-        (ei.type==='table'?'<span class="tsep"></span><span class="hint">Cellule :</span><button class="tb" data-cell="mr" title="Fusionner avec la cellule de droite">Fusionner →</button><button class="tb" data-cell="md" title="Fusionner avec la cellule du dessous">Fusionner ↓</button><button class="tb" data-cell="split">Séparer</button><button class="tb" data-cellbg="1" aria-haspopup="true">Fond'+ico(I.down)+'</button>':'')+
+        (ei.type==='table'?'<span class="tsep"></span><span class="hint">Cellule :</span><button class="tb" data-cell="mr" title="Fusionner avec la cellule de droite">Fusionner →</button><button class="tb" data-cell="md" title="Fusionner avec la cellule du dessous">Fusionner ↓</button><button class="tb" data-cell="split">Séparer</button><button class="tb" data-cell="diag" title="Couper la cellule en deux par une diagonale (tableau à double entrée) : 1re ligne = en-tête des colonnes, 2e ligne = en-tête des lignes">'+ico('<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 3l18 18"/>')+'Diagonale</button><button class="tb" data-cellbg="1" aria-haspopup="true">Fond'+ico(I.down)+'</button>':'')+
         '<span class="tsep"></span><button class="tb" data-fmtdone="1">Terminé</button>';
       $$('#props [data-fmt],#props [data-fmtcolor],#props [data-fmtdone],#props [data-cell],#props [data-cellbg]').forEach(function(b){ b.addEventListener('mousedown', function(e){ e.preventDefault(); }); });
       $$('#props [data-cell]').forEach(function(b){ b.onclick=function(){ cellAction(b.getAttribute('data-cell')); }; });
@@ -1601,6 +1605,7 @@ function cellAction(a){
   var cl=ED.cell; if(!cl){ toast('Clique d\u2019abord dans une cellule.'); return; }
   var id=it.id; commitEdit(); pushHist(); it.spans=it.spans||{}; var k=cl.r+','+cl.c, sp=it.spans[k]||{cs:1,rs:1};
   var nR=it.rows.length, nC=it.rows[0].length;
+  if(a==='diag'){ it.diag=it.diag||{}; if(it.diag[k]) delete it.diag[k]; else { it.diag[k]=true; toast('Diagonale ajoutée : écris l\u2019en-tête des colonnes sur la 1re ligne, puis Entrée et celui des lignes sur la 2e.'); } if(!Object.keys(it.diag).length) delete it.diag; touch(); ED.sel=id; startEdit(id); var tdd=$('#page td[data-r="'+cl.r+'"][data-c="'+cl.c+'"]'); if(tdd){ tdd.focus(); ED.cell=cl; } return; }
   if(a==='mr'){ if(cl.c+(sp.cs||1)<nC) sp.cs=(sp.cs||1)+1; else toast('Pas de cellule à droite.'); }
   else if(a==='md'){ if(cl.r+(sp.rs||1)<nR) sp.rs=(sp.rs||1)+1; else toast('Pas de cellule en dessous.'); }
   if(a==='split'){ delete it.spans[k]; } else if((sp.cs||1)>1 || (sp.rs||1)>1) it.spans[k]=sp;
