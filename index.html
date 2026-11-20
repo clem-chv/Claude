@@ -20,7 +20,7 @@ html[data-theme="sombre"] .toast{background:#ECECE8;color:#17181A}
 .thb{width:38px;min-height:38px;padding:0}
 .aiwrap{max-width:1400px}
 .aistep{margin-top:18px;gap:10px}
-.aistep[hidden]{display:none}.aiws{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#ddd)}.aiws.need{border-color:#d97706;background:rgba(217,119,6,.08)}.aiphone{margin-top:10px}.aiphh{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--soft,rgba(127,127,127,.08));font-size:13px}.aiphh svg{flex:none;width:20px;height:20px;margin-top:2px}.aiphh span{display:block;opacity:.8;margin-top:2px}.aiphq{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:12px;border:1px solid var(--line,#ddd);border-radius:12px}.aiphq img{width:180px;height:180px;background:#fff;border-radius:8px;padding:4px}.aiphq ol{margin:6px 0;padding-left:18px;font-size:13px}.aiphq code{user-select:all}
+.aistep[hidden]{display:none}.aicond{margin:0 0 10px}.aicond .airow{gap:8px;align-items:center;flex-wrap:wrap}.aif.aiinl{flex-direction:row;align-items:center;gap:6px;margin:0}.aiwarn{color:#b45309;font-weight:600}.aiws{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#ddd)}.aiws.need{border-color:#d97706;background:rgba(217,119,6,.08)}.aiphone{margin-top:10px}.aiphh{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--soft,rgba(127,127,127,.08));font-size:13px}.aiphh svg{flex:none;width:20px;height:20px;margin-top:2px}.aiphh span{display:block;opacity:.8;margin-top:2px}.aiphq{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:12px;border:1px solid var(--line,#ddd);border-radius:12px}.aiphq img{width:180px;height:180px;background:#fff;border-radius:8px;padding:4px}.aiphq ol{margin:6px 0;padding-left:18px;font-size:13px}.aiphq code{user-select:all}
 .aistep>.seg,.aistep>.aichip,.aistep>label.aichip{align-self:flex-start}
 .aisth{display:flex;align-items:center;gap:12px;margin-bottom:4px}
 .aisth h2{font-size:18px;margin:0}
@@ -1360,7 +1360,7 @@ var AI_NATURES=[['definition','Définition'],['retenir','À retenir'],['importan
 var AI_BTYPES=[['encadre','Encadré'],['titre','Sous-titre'],['texte','Texte'],['tableau','Tableau'],['schema','Schéma'],['formule','Formule']];
 var AI_PARTS=[['definition','Définitions'],['retenir','À retenir'],['schema','Schéma'],['tableau','Tableau comparatif'],['exemple','Exemples'],['piege','Pièges'],['methode','Méthode'],['formule','Formules'],['article','Références (articles, normes)']];
 var AIW={ imgs:[], busy:false, ctrl:null, draft:null, cfg:null, keyInfo:null };
-function aiCfg(){ var a=S.settings.ai||{}; return { ws:/^wrkspc_[A-Za-z0-9]+$/.test(a.ws||'')?a.ws:'', budget:+a.budget||0, history:Array.isArray(a.history)?a.history:[], model:AI_MODELS[a.model]?a.model:'claude-sonnet-5-5', style:/^(synth|standard|detail)$/.test(a.style||'')?a.style:'standard', tech:a.tech!==false, extra:a.extra||'', pages:(a.pages==null||+a.pages===0)?0:clamp(parseInt(a.pages,10)||2,1,6), parts:Array.isArray(a.parts)?a.parts:['definition','retenir','schema','tableau','exemple'] }; }
+function aiCfg(){ var a=S.settings.ai||{}; return { ws:/^wrkspc_[A-Za-z0-9]+$/.test(a.ws||'')?a.ws:'', budget:+a.budget||0, history:Array.isArray(a.history)?a.history:[], model:AI_MODELS[a.model]?a.model:'claude-sonnet-5-5', style:/^(synth|standard|detail)$/.test(a.style||'')?a.style:'standard', tech:a.tech!==false, extra:a.extra||'', pages:(a.pages==null||+a.pages===0)?0:clamp(parseInt(a.pages,10)||2,1,12), parts:Array.isArray(a.parts)?a.parts:['definition','retenir','schema','tableau','exemple'] }; }
 function aiSave(patch){ var a=S.settings.ai||{}; Object.keys(patch).forEach(function(k){ a[k]=patch[k]; }); S.settings.ai=a; Store.saveSettings(); }
 function aiSpent(){ return aiCfg().history.reduce(function(t,h){ return t+(+h.cost||0); },0); }
 function money(v){ return (Math.round(v*100)/100).toLocaleString('fr-FR',{ minimumFractionDigits:2, maximumFractionDigits:2 })+' $'; }
@@ -1427,15 +1427,19 @@ function aiDrawImgs(){ var g=$('#aiImgs'); if(!g) return;
 
 /* ---- estimation ---- */
 function aiEstimate(){ var c=aiCfg(), m=AI_MODELS[c.model], tin=1500; AIW.imgs.forEach(function(x){ tin+= x.kind==='pdf' ? Math.round(x.size/1024/1024*2500+1500) : Math.min(1650, Math.ceil(x.w*x.h/750)); });
-  var np=c.pages||Math.max(2, Math.ceil(AIW.imgs.length*0.7)); var tout=Math.min(c.pages?16000:24000, 1200+np*(c.style==='detail'?2600:(c.style==='synth'?1400:2000))); return { tin:tin, tout:tout, cost:tin/1e6*m.pin+tout/1e6*m.pout }; }
+  var np=c.pages||Math.min(8,Math.max(2, Math.ceil(AIW.imgs.length/4))); var tout=Math.min(16000, 1200+np*(c.style==='detail'?2600:(c.style==='synth'?1400:2000))); return { tin:tin, tout:tout, cost:tin/1e6*m.pin+tout/1e6*m.pout }; }
 function aiDrawEstimate(){ var e=$('#aiEst'); if(!e) return; var x=aiEstimate(), rest=aiCfg().budget-aiSpent();
   e.innerHTML='Coût estimé : <b>≈ '+money(x.cost)+'</b> <span class="aimut">(≈ '+Math.round(x.tin/100)/10+' k tokens lus, '+Math.round(x.tout/100)/10+' k écrits au maximum)</span>'+(aiCfg().budget && rest<x.cost?'<div class="aiwarn">Ton solde suivi ('+money(rest)+') est inférieur au coût estimé.</div>':''); }
 
 /* ---- prompt ---- */
 function aiPrompt(meta){
-  var c=aiCfg(), st={ synth:'Style SYNTHÉTIQUE : mots-clés, phrases nominales très courtes, listes à puces, aucun paragraphe.', standard:'Style STANDARD : phrases courtes et claires, listes à puces quand c’est utile.', detail:'Style DÉTAILLÉ : explications complètes (mécanismes, conditions, exceptions), avec exemples.' }[c.style];
-  var sys='Tu es un professeur expert du DSCG (diplôme supérieur de comptabilité et de gestion). Tu rédiges des fiches de révision en français à partir des documents fournis (photos de livres, notes manuscrites, PDF).\n'+
-    'Règles : n’utilise que le contenu des documents, n’invente rien. Si un passage est illisible ou incertain, écris [à vérifier]. Respecte la logique du cours (plan, définitions, conditions, exceptions, exemples, chiffres).\n'+
+  var c=aiCfg(), st={ synth:'Style SYNTHÉTIQUE : uniquement mots-clés et puces de quelques mots, 15 mots au plus par encadré.', standard:'Style STANDARD : puces télégraphiques, 25 mots au plus par encadré.', detail:'Style DÉTAILLÉ : puces télégraphiques un peu plus complètes (conditions et exceptions précisées), 40 mots au plus par encadré.' }[c.style];
+  var sys='Tu es un excellent étudiant du DSCG (diplôme supérieur de comptabilité et de gestion) qui fait ses fiches de révision à partir de son cours (photos de livres, notes manuscrites, PDF).\n'+
+    'Une fiche de révision N’EST PAS un résumé du cours : c’est l’ossature à mémoriser pour l’examen. Ton travail est de TRIER puis CONDENSER, pas de recopier.\n'+
+    'À garder : les règles et mécanismes (qui, quoi, conditions, effets, sanctions), les seuils, délais, taux et formules, les exceptions qui tombent à l’examen, les mots-clés techniques.\n'+
+    'À supprimer : introductions, historique, contexte, justifications, phrases d’explication, répétitions, développements d’auteurs, exemples longs (au plus un exemple d’une ligne quand il est vraiment utile), tout ce qui se devine.\n'+
+    'Forme : style télégraphique (pas de phrases complètes, pas de verbes inutiles), flèches → et symboles (=, +, −, ≠, ⇒, <, >), abréviations courantes (SA, SAS, AG, CA, HT, TVA, art., ex., cf.). Un encadré = une idée, 25 mots au plus. Regroupe les notions comparables dans un tableau plutôt que dans plusieurs encadrés.\n'+
+    'N’utilise que le contenu des documents, n’invente rien. Si un passage est illisible, écris [à vérifier].\n'+
     'Réponds UNIQUEMENT avec un objet JSON valide, sans texte ni balise autour, au format :\n'+
     '{"titre":"Titre de la fiche","pages":[{"plan":"Partie > Chapitre > Section (où on en est dans le plan)","blocs":[\n'+
     ' {"type":"titre","texte":"Sous-titre"},\n'+
@@ -1444,12 +1448,13 @@ function aiPrompt(meta){
     ' {"type":"schema","plan":"Notion principale\\n  Idée 1 | précision courte\\n    Détail\\n  Idée 2"},\n'+
     ' {"type":"formule","libelle":"Nom de la formule","texte":"Résultat = A - B"},\n'+
     ' {"type":"texte","texte":"Texte libre"}\n]}]}\n'+
-    'Le plan d’un schéma utilise 2 espaces de retrait par niveau, 12 éléments au plus, un seul schéma par page (il occupe toute la page). Les tableaux ont 2 à 5 colonnes, la première ligne est l’en-tête.';
+    'Un schéma occupe une page entière à lui seul : 1 schéma au maximum pour toute la fiche, seulement s’il remplace une page de texte (12 éléments au plus, 2 espaces de retrait par niveau, libellés de 1 à 4 mots). Les tableaux ont 2 à 5 colonnes, la première ligne est l’en-tête, cellules de quelques mots.\n'+
+    'Capacité d’une page : '+(meta.orient==='landscape'?'environ 8 encadrés courts, ou 1 tableau + 4 encadrés (220 mots au total au maximum)':'environ 6 encadrés courts, ou 1 tableau + 3 encadrés (180 mots au total au maximum)')+'. Respecte STRICTEMENT le nombre de pages demandé : si tu dépasses, fusionne et coupe encore.';
   var ue=ueOf(meta.ue)||{}, lay=(meta.orient==='landscape'?'paysage':'portrait')+' '+(meta.size||'A4');
-  var u='Chapitre : '+meta.title+'\nUE : '+meta.ue+' – '+(ue.name||'')+'\nFormat : '+lay+(c.pages?', environ '+c.pages+' page'+(c.pages>1?'s':''):', longueur libre')+' (une page '+lay+' contient environ '+(meta.orient==='landscape'?'8 à 10':'6 à 8')+' encadrés courts).\n'+st+'\n'+
+  var u='Chapitre : '+meta.title+'\nUE : '+meta.ue+' – '+(ue.name||'')+'\nFormat : '+lay+'\nLongueur : '+(c.pages?c.pages+' page'+(c.pages>1?'s':'')+' AU MAXIMUM.':'1 page de fiche pour 4 à 5 pages de cours, entre 2 et 8 pages au total (compte les pages des documents fournis).')+'\n'+st+'\n'+
     (c.tech?'Utilise le vocabulaire technique exact du DSCG (termes juridiques, comptables, financiers) et cite les références (articles, normes) quand elles figurent dans les documents.\n':'Utilise un vocabulaire simple et accessible.\n')+
     'Éléments à privilégier : '+c.parts.map(function(p){ var x=AI_PARTS.filter(function(q){ return q[0]===p; })[0]; return x?x[1]:p; }).join(', ')+'.\n'+
-    (c.pages?'':'Longueur : choisis toi-même le nombre de pages nécessaire. C’est une fiche mémo d’étudiant : formulations courtes et condensées, rien de superflu, mais AUCUN mécanisme, condition, exception, délai, seuil ou formule du cours ne doit manquer. Mieux vaut une page de plus qu’un mécanisme oublié.\n')+(meta.plan?'Position dans le plan : '+meta.plan+'\n':'')+(c.extra?'Consignes supplémentaires : '+c.extra+'\n':'')+
+    'Avant de répondre, vérifie : nombre de pages respecté, aucun encadré de plus de 25 mots, aucune phrase recopiée du cours.\n'+(meta.plan?'Position dans le plan : '+meta.plan+'\n':'')+(c.extra?'Consignes supplémentaires : '+c.extra+'\n':'')+
     'Les '+AIW.imgs.length+' documents ci-dessus sont dans l’ordre du cours.';
   return { sys:sys, user:u };
 }
@@ -1463,7 +1468,7 @@ function aiGenerate(){
   aiKeyInfo().then(function(ki){ if(!ki || !ki.has){ toast('Enregistre d’abord ta clé API (étape 1).'); var k=$('#aiKey'); if(k) k.focus(); return; }
     var c=aiCfg(), pr=aiPrompt(meta), content=AIW.imgs.map(function(x){ return x.kind==='pdf'?{ type:'document', source:{ type:'base64', media_type:'application/pdf', data:x.data } }:{ type:'image', source:{ type:'base64', media_type:x.media, data:x.data } }; });
     content.push({ type:'text', text:pr.user });
-    var body={ model:c.model, max_tokens:(c.pages?16000:24000), system:pr.sys, messages:[{ role:'user', content:content }] };
+    var body={ model:c.model, max_tokens:16000, system:pr.sys, messages:[{ role:'user', content:content }] };
     AIW.busy=true; AIW.ctrl=window.AbortController?new AbortController():null; var t0=Date.now(), st=$('#aiRun');
     var tick=setInterval(function(){ if(st) st.innerHTML='<span class="aispin"></span> Lecture des documents et rédaction… '+Math.round((Date.now()-t0)/1000)+' s <button type="button" class="btn sm ghost" id="aiStop">Annuler</button>'; var sb=$('#aiStop'); if(sb) sb.onclick=function(){ AIW.cancel=true; if(AIW.ctrl) AIW.ctrl.abort(); }; }, 500);
     AIW.cancel=false; var gb=$('#aiGo'); if(gb) gb.disabled=true;
@@ -1480,6 +1485,36 @@ function aiGenerate(){
       aiDrawCredits(); aiDrawDraft(); var s6=$('#aiStep6'); if(s6) s6.scrollIntoView({ behavior:'smooth', block:'start' });
     }, function(e){ clearInterval(tick); AIW.busy=false; if(gb) gb.disabled=false; if(st) st.innerHTML='<span class="aierr">'+(AIW.cancel?'Annulé.':'Connexion à l’API impossible. Vérifie ta connexion internet.'+(window.fichesAI?'':' Dans la version en ligne ouverte dans Claude, les appels externes sont bloqués : utilise l’exe ou la version GitHub.'))+'</span>'; });
   });
+}
+
+function aiDrawCond(np){
+  var b=$('#aiCond'); if(!b || AIW.condBusy) return; var tgt=aiCfg().pages, def=Math.max(1, tgt && tgt<np ? tgt : Math.ceil(np/2));
+  var opts=[]; for(var i=1;i<np && i<=12;i++) opts.push(i);
+  if(!opts.length){ b.innerHTML=''; return; }
+  b.innerHTML='<div class="airow">'+(tgt && np>tgt?'<span class="aiwarn">'+np+' pages pour un objectif de '+tgt+'.</span>':'<span class="aimut">Trop long ?</span>')+
+    '<label class="aif aiinl">Condenser en<select id="aiCondN">'+opts.map(function(i){ return '<option value="'+i+'"'+(i===def?' selected':'')+'>'+i+' page'+(i>1?'s':'')+'</option>'; }).join('')+'</select></label>'+
+    '<button type="button" class="btn sm pri" id="aiCondGo">Condenser</button><span class="aimut">sans relire les photos : environ 1 à 3 centimes</span></div><div id="aiCondSt" class="aimut"></div>';
+  $('#aiCondGo').onclick=function(){ aiCondense(+$('#aiCondN').value, np); };
+}
+function aiCondense(n, cur){
+  if(AIW.busy || !AIW.draft) return; var c=aiCfg(), meta=AIW.cfg||aiMeta(), st=$('#aiCondSt');
+  var sys='Tu es un excellent étudiant du DSCG. On te donne une fiche de révision au format JSON, trop longue. Réécris-la pour qu’elle tienne en '+n+' page'+(n>1?'s':'')+' au maximum (actuellement '+cur+').\n'+
+    'Méthode : garde l’ossature à mémoriser (règles, conditions, effets, seuils, délais, formules, exceptions importantes) ; supprime contexte, justifications, répétitions et exemples ; fusionne les encadrés qui se recoupent ; regroupe les notions comparables en tableaux ; style télégraphique avec → et symboles ; 25 mots au plus par encadré ; 1 schéma au maximum (il occupe une page entière).\n'+
+    'Capacité d’une page : '+(meta.orient==='landscape'?'environ 8 encadrés courts ou 1 tableau + 4 encadrés (220 mots au maximum)':'environ 6 encadrés courts ou 1 tableau + 3 encadrés (180 mots au maximum)')+'.\n'+
+    'Réponds UNIQUEMENT avec le JSON, exactement au même format (titre, pages[{plan, blocs[…]}]), avec '+n+' objet'+(n>1?'s':'')+' dans « pages » au maximum.';
+  var body={ model:c.model, max_tokens:12000, system:sys, messages:[{ role:'user', content:[{ type:'text', text:JSON.stringify(AIW.draft) }] }] };
+  AIW.busy=AIW.condBusy=true; var t0=Date.now(), gb=$('#aiCondGo'); if(gb) gb.disabled=true;
+  var tick=setInterval(function(){ if(st) st.innerHTML='<span class="aispin"></span> Condensation… '+Math.round((Date.now()-t0)/1000)+' s'; }, 500);
+  var done=function(){ clearInterval(tick); AIW.busy=AIW.condBusy=false; if(gb) gb.disabled=false; };
+  aiPost(body).then(function(r){ done();
+    if(r.status!==200){ if(st) st.innerHTML='<span class="aierr">'+esc(aiErr(r.status, r.body))+'</span>'; return; }
+    var j=JSON.parse(r.body), txt=(j.content||[]).filter(function(x){ return x.type==='text'; }).map(function(x){ return x.text; }).join(''), u=j.usage||{}, m=AI_MODELS[c.model];
+    var cost=(u.input_tokens||0)/1e6*m.pin+(u.output_tokens||0)/1e6*m.pout;
+    var h=aiCfg().history.slice(); h.push({ t:Date.now(), title:(meta.title||'')+' (condensée)', model:c.model, inTok:u.input_tokens||0, outTok:u.output_tokens||0, cost:Math.round(cost*10000)/10000, docs:0 }); aiSave({ history:h }); aiDrawCredits();
+    var d; try{ d=aiParse(txt); }catch(e){ if(st) st.innerHTML='<span class="aierr">Réponse illisible ('+esc(e.message)+'), coût '+money(cost)+'. La pré-fiche n’a pas changé.</span>'; return; }
+    if(!d.titre) d.titre=AIW.draft.titre; AIW.prev=AIW.draft; AIW.draft=d; aiStoreDraft(); aiDrawDraft();
+    var s2=$('#aiCondSt'); if(s2){ s2.innerHTML='Condensée en '+Math.round((Date.now()-t0)/1000)+' s · coût '+money(cost)+' · <a href="#" id="aiUndo">revenir à la version précédente</a>'; $('#aiUndo').onclick=function(e){ e.preventDefault(); if(!AIW.prev) return; AIW.draft=AIW.prev; AIW.prev=null; aiStoreDraft(); aiDrawDraft(); }; }
+  }, function(){ done(); if(st) st.innerHTML='<span class="aierr">Connexion à l’API impossible.</span>'; });
 }
 function aiMeta(){ var g=function(id){ var e=$(id); return e?e.value:''; }; return { title:g('#aiTitle').trim(), ue:g('#aiUe')||'UE1', orient:g('#aiOr')||'landscape', size:g('#aiSz')||'A4', plan:g('#aiPlan').trim() }; }
 function aiStoreDraft(){ try{ localStorage.setItem(AI_DRAFT, JSON.stringify({ d:AIW.draft, c:AIW.cfg })); }catch(e){} }
@@ -1553,6 +1588,7 @@ function aiPreview(){
   var W=Math.max(200, pv.clientWidth-4);
   f.pages.forEach(function(p,i){ useDims(p); var pw=document.createElement('div'); pw.className='pw aipw'; var pg=document.createElement('div'); pw.appendChild(pg); pv.appendChild(pw); renderPage(pg,f,i,{}); var sc=Math.min(1,W/PW); pw.style.width=(PW*sc)+'px'; pw.style.height=(PH*sc)+'px'; pg.style.transform='scale('+sc+')'; pg.style.transformOrigin='0 0'; });
   var n=$('#aiPrevN'); if(n) n.textContent=f.pages.length+' page'+(f.pages.length>1?'s':'');
+  aiDrawCond(f.pages.length);
 }
 function aiImport(){
   if(!AIW.draft) return; var f=aiBuildFiche(AIW.draft, AIW.cfg||aiMeta()); S.fiches.push(f); Store.saveFiche(f,true);
@@ -1613,7 +1649,7 @@ function viewAI(){
       '<label class="aif">UE<select id="aiUe">'+UE_KEYS.map(function(k){ return '<option value="'+k+'"'+((last.ue||'UE1')===k?' selected':'')+'>'+k+' · '+esc(ueOf(k).name)+'</option>'; }).join('')+'</select></label>'+
       '<label class="aif">Orientation<select id="aiOr">'+opt([['landscape','Paysage'],['portrait','Portrait']], last.orient||(S.settings.defOrient==='portrait'?'portrait':'landscape'))+'</select></label>'+
       '<label class="aif">Format<select id="aiSz">'+Object.keys(SIZES).map(function(k){ return '<option value="'+k+'"'+((last.size||'A4')===k?' selected':'')+'>'+SIZES[k].lab+'</option>'; }).join('')+'</select></label>'+
-      '<label class="aif">Longueur<select id="aiPages"><option value="0"'+(c.pages?'':' selected')+'>Automatique : tout le cours, condensé (recommandé)</option>'+[1,2,3,4,5,6].map(function(n){ return '<option value="'+n+'"'+(c.pages===n?' selected':'')+'>'+n+' page'+(n>1?'s':'')+' maximum</option>'; }).join('')+'</select></label>'+
+      '<label class="aif">Longueur<select id="aiPages"><option value="0"'+(c.pages?'':' selected')+'>Automatique : 1 page pour 4 à 5 pages de cours</option>'+[1,2,3,4,5,6,7,8,10,12].map(function(n){ return '<option value="'+n+'"'+(c.pages===n?' selected':'')+'>'+n+' page'+(n>1?'s':'')+' maximum</option>'; }).join('')+'</select></label>'+
       '<label class="aif" style="grid-column:1/-1">Où on en est dans le plan (facultatif)<input id="aiPlan" type="text" value="'+esc(last.plan||'')+'" placeholder="ex. Partie 2 > Chapitre 1"></label></div>'+
       '<div class="aimut" style="margin:10px 0 6px">Éléments à privilégier</div><div class="aichips">'+AI_PARTS.map(function(p){ return '<label class="aichip"><input type="checkbox" data-part="'+p[0]+'"'+(c.parts.indexOf(p[0])>=0?' checked':'')+'>'+p[1]+'</label>'; }).join('')+'</div>')+
     step(3,'Tes cours','<div class="aidrop" id="aiDrop" tabindex="0" role="button" aria-label="Ajouter des photos ou des PDF de ton cours">'+ico('<path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/>')+'<b>Glisse ici tes photos de cours ou tes PDF</b><span>ou clique pour les choisir · Ctrl+V pour coller une capture · 20 documents maximum</span><input type="file" id="aiFile" accept="image/*,application/pdf" multiple hidden></div><div class="aiphone" id="aiPhone"></div><div class="aimut" id="aiImgN" style="margin:10px 0 6px"></div><div class="aiimgs" id="aiImgs"></div>')+
@@ -1622,7 +1658,7 @@ function viewAI(){
       '<label class="aif" style="margin-top:12px">Consignes supplémentaires (facultatif)<textarea id="aiExtra" rows="2" placeholder="ex. Insiste sur les conditions de comptabilisation ; ajoute un tableau provision / dette.">'+esc(c.extra)+'</textarea></label>'+
       '<label class="aif" style="margin-top:12px;max-width:380px">Modèle<select id="aiModel">'+Object.keys(AI_MODELS).map(function(k){ return '<option value="'+k+'"'+(c.model===k?' selected':'')+'>'+AI_MODELS[k].l+'</option>'; }).join('')+'</select></label>')+
     step(5,'Générer la pré-fiche','<div id="aiEst" class="aiest"></div><div class="airow" style="margin-top:12px"><button type="button" class="btn pri" id="aiGo">'+ico('<path d="M12 3l1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/>')+'Générer la pré-fiche</button><div id="aiRun" class="aimut" role="status" aria-live="polite"></div></div>')+
-    '<section class="panel aistep" id="aiStep6" hidden><div class="aisth"><span class="ainum">6</span><h2>Ajuste la pré-fiche</h2><span class="aimut" style="margin-left:auto">Les modifications sont gratuites : seule la génération consomme des crédits.</span></div><div class="aitwo"><div id="aiEd" class="aied"></div><div class="aiprevw"><div class="aimut" style="margin-bottom:6px">Aperçu · <span id="aiPrevN"></span></div><div id="aiPrev" class="aiprev"></div></div></div></section>'+
+    '<section class="panel aistep" id="aiStep6" hidden><div class="aisth"><span class="ainum">6</span><h2>Ajuste la pré-fiche</h2><span class="aimut" style="margin-left:auto">Les modifications sont gratuites : seule la génération consomme des crédits.</span></div><div class="aitwo"><div id="aiEd" class="aied"></div><div class="aiprevw"><div class="aimut" style="margin-bottom:6px">Aperçu · <span id="aiPrevN"></span></div><div class="aicond" id="aiCond"></div><div id="aiPrev" class="aiprev"></div></div></div></section>'+
     '<section class="panel aistep" id="aiStep7" hidden><div class="aisth"><span class="ainum">7</span><h2>Valider</h2></div><div class="airow"><button type="button" class="btn pri" id="aiImp">'+ico('<path d="M5 12l5 5L20 7"/>')+'Valider et ajouter à mes fiches</button><button type="button" class="btn ghost" id="aiRegen">Régénérer (nouveau coût)</button><button type="button" class="btn ghost" id="aiDrop2">Abandonner cette pré-fiche</button></div><p class="aimut" style="margin:8px 0 0">La fiche s’ouvre ensuite dans l’éditeur, avec tous les outils habituels.</p></section></div>';
   aiDrawCredits(); aiDrawKey(); aiDrawImgs(); aiDrawEstimate();
   var SD={ synth:'Mots-clés, phrases très courtes et puces : idéal pour réviser vite.', standard:'Phrases courtes et claires, avec des puces quand c’est utile.', detail:'Explications complètes : mécanismes, conditions, exceptions et exemples.' };
