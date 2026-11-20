@@ -427,6 +427,7 @@ input[type=color]{width:40px;height:32px;padding:2px;border:1px solid var(--stro
 .formula .bt{font-family:Georgia,'Times New Roman',serif;font-size:calc(19px * var(--fs,1));text-align:center;outline:none;line-height:1.6}
 .formula sub,.formula sup{font-size:12px}
 .tbl table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden;font-size:calc(14px * var(--fs,1));line-height:1.4;table-layout:fixed}
+.tbl td.csel{box-shadow:inset 0 0 0 9999px rgba(47,111,237,.16),inset 0 0 0 2px #2F6FED}
 .tbl td{padding:10px 12px;vertical-align:top;outline:none;word-wrap:break-word}
 .it.sel{outline:2px solid #2563EB;outline-offset:4px}
 .it.editing{outline:2px solid #2457D6;outline-offset:4px}
@@ -1853,15 +1854,15 @@ function drawProps0(){
         fontSelect('', 'eFf', 'data-ifont="1"')+sizeSelect(curPt(ei), 'eFs', 'data-isize="1"', 'Taille du texte sélectionné (pt)')+
         (ei.type!=='node'&&ei.type!=='shape'?'<button class="tb" data-fmt="insertUnorderedList" title="Liste à puces">'+ico('<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>')+'Puces</button><button class="tb" data-fmt="insertOrderedList" title="Liste numérotée">'+ico('<path d="M10 6h10M10 12h10M10 18h10M4 5h1v3M4 11h2l-2 3h2M4 17h2v3H4"/>')+'1. 2. 3.</button>':'')+
         '<button class="tb" data-fmt="removeFormat" title="Retirer la mise en forme">Effacer</button>'+alignButtons(ei).replace(/data-p="/g,'data-ealign="')+
-        (ei.type==='table'?'<span class="tsep"></span><span class="hint">Cellule :</span><button class="tb" data-cell="mr" title="Fusionner avec la cellule de droite">Fusionner →</button><button class="tb" data-cell="md" title="Fusionner avec la cellule du dessous">Fusionner ↓</button><button class="tb" data-cell="split">Séparer</button><button class="tb" data-cell="diag" title="Couper la cellule en deux par une diagonale (tableau à double entrée) : 1re ligne = en-tête des colonnes, 2e ligne = en-tête des lignes">'+ico('<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 3l18 18"/>')+'Diagonale</button><button class="tb" data-cellbg="1" aria-haspopup="true">Fond'+ico(I.down)+'</button>':'')+
+        (ei.type==='table'?'<span class="tsep"></span><span class="hint">Cellule :</span><button class="tb" data-cell="mr" title="Fusionner avec la cellule de droite">Fusionner →</button><button class="tb" data-cell="md" title="Fusionner avec la cellule du dessous">Fusionner ↓</button><button class="tb" data-cell="merge" title="Fusionner les cellules sélectionnées (Maj+clic ou glisser pour en sélectionner plusieurs)">Fusionner la sélection</button><button class="tb" data-cell="split">Séparer</button><button class="tb" data-cell="diag" title="Couper la cellule en deux par une diagonale (tableau à double entrée) : 1re ligne = en-tête des colonnes, 2e ligne = en-tête des lignes">'+ico('<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 3l18 18"/>')+'Diagonale</button><button class="tb" data-cellbg="1" aria-haspopup="true">Fond'+ico(I.down)+'</button>':'')+
         '<span class="tsep"></span><button class="tb" data-fmtdone="1">Terminé</button>';
       $$('#props [data-fmt],#props [data-fmtcolor],#props [data-fmtdone],#props [data-cell],#props [data-cellbg]').forEach(function(b){ b.addEventListener('mousedown', function(e){ e.preventDefault(); }); });
       $$('#props [data-cell]').forEach(function(b){ b.onclick=function(){ cellAction(b.getAttribute('data-cell')); }; });
       $$('#props [data-ealign]').forEach(function(b){ b.addEventListener('mousedown', function(e){ e.preventDefault(); }); b.onclick=function(){ var id=ED.editing, k=b.getAttribute('data-ealign'), it0=findItem(curPage(),id), cl=ED.cell;
-        if(it0 && it0.type==='table' && cl){ commitEdit(); pushHist(); var kv=k.split(':'), key=cl.r+','+cl.c; it0.cellAl=it0.cellAl||{}; var al=it0.cellAl[key]||{}; al[kv[0]]=kv[1]; it0.cellAl[key]=al; touch(); ED.sel=id; startEdit(id); var td=$('#page td[data-r="'+cl.r+'"][data-c="'+cl.c+'"]'); if(td){ td.focus(); ED.cell=cl; var r=document.createRange(); r.selectNodeContents(td); r.collapse(false); var sl=window.getSelection(); sl.removeAllRanges(); sl.addRange(r); } syncCellAlign(); return; }
+        if(it0 && it0.type==='table' && cl){ var cells=cselMulti()?cselCells(it0):[cl]; commitEdit(); pushHist(); var kv=k.split(':'); it0.cellAl=it0.cellAl||{}; cells.forEach(function(q){ var key=q.r+','+q.c, al=it0.cellAl[key]||{}; al[kv[0]]=kv[1]; it0.cellAl[key]=al; }); touch(); var keepSel=ED.cellSel; ED.sel=id; startEdit(id); var td=$('#page td[data-r="'+cl.r+'"][data-c="'+cl.c+'"]'); if(td){ td.focus(); ED.cell=cl; var r=document.createRange(); r.selectNodeContents(td); r.collapse(false); var sl=window.getSelection(); sl.removeAllRanges(); sl.addRange(r); } ED.cellSel=keepSel; paintCellSel(); syncCellAlign(); return; }
         commitEdit(); ED.sel=id; propAction(k); startEdit(id); }; });
       var cbb=$('#props [data-cellbg]'); if(cbb) cbb.onclick=function(e){ e.stopPropagation(); openCellBg(this); };
-      $$('#props [data-fmt]').forEach(function(b){ b.onclick=function(){ var c=b.getAttribute('data-fmt'); document.execCommand(c, false, null); if(/List$/.test(c)) caretToLineEnd(); syncFmtState(); }; });
+      $$('#props [data-fmt]').forEach(function(b){ b.onclick=function(){ var c=b.getAttribute('data-fmt'); if(!/List$/.test(c) && cselExec(c)){ syncFmtState(); return; } document.execCommand(c, false, null); if(/List$/.test(c)) caretToLineEnd(); syncFmtState(); }; });
       $('#props [data-fmtdone]').onclick=function(){ commitEdit(); };
       $('#props [data-fmtcolor]').onclick=function(e){ e.stopPropagation(); openInlineColor(this); };
       var syb=$('#props [data-sym]'); if(syb){ syb.onmousedown=function(e){ e.preventDefault(); }; syb.onclick=function(e){ e.stopPropagation(); openSymbolMenu(this); }; }
@@ -1968,7 +1969,7 @@ function openInlineColor(btn){
   closeMenus(); var sel=window.getSelection(), saved=sel.rangeCount?sel.getRangeAt(0).cloneRange():null;
   var m=document.createElement('div'); m.className='menu-pop cpop'; m.setAttribute('role','dialog'); m.setAttribute('aria-label','Couleur du texte sélectionné');
   m.innerHTML='<div class="lab" style="margin:0 2px 8px">Couleur du texte sélectionné</div>';
-  var apply=function(c){ var ed=$('#page [data-edit]'); if(!ed) return; ed.focus(); if(saved){ var s2=window.getSelection(); s2.removeAllRanges(); s2.addRange(saved); } document.execCommand('foreColor', false, c); addRecent(c); closeMenus(); };
+  var apply=function(c){ if(cselMulti()){ cselExec('foreColor', c); addRecent(c); closeMenus(); return; } var ed=$('#page [data-edit]'); if(!ed) return; ed.focus(); if(saved){ var s2=window.getSelection(); s2.removeAllRanges(); s2.addRange(saved); } document.execCommand('foreColor', false, c); addRecent(c); closeMenus(); };
   var last=window.__lastInk||'#B42318';
   buildPicker(m, last, null, function(c, close){ window.__lastInk=c; if(close) apply(c); }, 'Appliquer');
   m.insertAdjacentHTML('beforeend', recentRow());
@@ -2006,6 +2007,13 @@ document.addEventListener('focusin', function(e){ if(!ED) return; var td=e.targe
 function cellAction(a){
   if(!ED || !ED.editing) return; var it=findItem(curPage(),ED.editing); if(!it || it.type!=='table') return;
   var cl=ED.cell; if(!cl){ toast('Clique d\u2019abord dans une cellule.'); return; }
+  var msel=cselMulti();
+  if(a==='merge' || (msel && (a==='mr'||a==='md'))){ if(!msel){ toast('Sélectionne d’abord plusieurs cellules : Maj+clic ou glisse d’une cellule à l’autre.'); return; }
+    var R=cselRect(it), id0=it.id; commitEdit(); pushHist(); it.spans=it.spans||{}; var parts=[];
+    for(var r=R.r1;r<=R.r2;r++) for(var c=R.c1;c<=R.c2;c++){ var v=String(it.rows[r][c]||''); if(v.replace(/<[^>]*>|&nbsp;|\s/g,'')) parts.push(v); if(r!==R.r1||c!==R.c1){ it.rows[r][c]=''; delete it.spans[r+','+c]; if(it.cellBg) delete it.cellBg[r+','+c]; } }
+    it.rows[R.r1][R.c1]=parts.join(it.rich?'<br>':'\n'); it.spans[R.r1+','+R.c1]={ cs:R.c2-R.c1+1, rs:R.r2-R.r1+1 };
+    ED.cellSel=null; touch(); cselRefocus(id0, { r:R.r1, c:R.c1 }); return; }
+  if(a==='split' && msel){ var R2=cselRect(it), id1=it.id; commitEdit(); pushHist(); if(it.spans){ Object.keys(it.spans).forEach(function(k2){ var q=k2.split(',').map(Number); if(q[0]>=R2.r1&&q[0]<=R2.r2&&q[1]>=R2.c1&&q[1]<=R2.c2) delete it.spans[k2]; }); if(!Object.keys(it.spans).length) delete it.spans; } var kp=ED.cellSel; touch(); cselRefocus(id1, cl, kp); return; }
   var id=it.id; commitEdit(); pushHist(); it.spans=it.spans||{}; var k=cl.r+','+cl.c, sp=it.spans[k]||{cs:1,rs:1};
   var nR=it.rows.length, nC=it.rows[0].length;
   if(a==='diag'){ it.diag=it.diag||{}; if(it.diag[k]) delete it.diag[k]; else { it.diag[k]=true; toast('Diagonale ajoutée : clique dans chaque moitié pour écrire (en haut à droite : les colonnes, en bas à gauche : les lignes). Entrée passe de l\u2019une à l\u2019autre.'); } if(!Object.keys(it.diag).length) delete it.diag; touch(); ED.sel=id; startEdit(id); var tdd=$('#page td[data-r="'+cl.r+'"][data-c="'+cl.c+'"]'); if(tdd){ tdd.focus(); ED.cell=cl; } return; }
@@ -2050,14 +2058,54 @@ function openTblGrid(btn){
     touch(); drawPage(); drawProps(); });
   document.body.appendChild(m); placePop(m, btn, 240);
 }
+
+/* ---- sélection de plusieurs cellules (Maj+clic ou glisser) ---- */
+function cselItem(){ if(!ED || !ED.editing || !ED.cellSel || ED.cellSel.id!==ED.editing) return null; var it=findItem(curPage(),ED.editing); return (it && it.type==='table')?it:null; }
+function cselRect(it){ var R=ED.cellSel, r1=Math.min(R.a.r,R.b.r), r2=Math.max(R.a.r,R.b.r), c1=Math.min(R.a.c,R.b.c), c2=Math.max(R.a.c,R.b.c), sp=it.spans||{}, ch=true;
+  while(ch){ ch=false; Object.keys(sp).forEach(function(k){ var q=k.split(',').map(Number), e=sp[k], rr=q[0]+(e.rs||1)-1, cc=q[1]+(e.cs||1)-1; if(q[0]<=r2 && rr>=r1 && q[1]<=c2 && cc>=c1){ if(q[0]<r1){ r1=q[0]; ch=true; } if(rr>r2){ r2=rr; ch=true; } if(q[1]<c1){ c1=q[1]; ch=true; } if(cc>c2){ c2=cc; ch=true; } } }); }
+  return { r1:r1, r2:r2, c1:c1, c2:c2 }; }
+function cselCells(it){ var R=cselRect(it), out=[]; for(var r=R.r1;r<=R.r2;r++) for(var c=R.c1;c<=R.c2;c++) out.push({ r:r, c:c }); return out; }
+function cselMulti(){ var it=cselItem(); if(!it) return null; var R=cselRect(it); return (R.r2>R.r1||R.c2>R.c1)?it:null; }
+function paintCellSel(){
+  $$('#page td.csel').forEach(function(t){ t.classList.remove('csel'); });
+  var it=cselMulti(); if(!it) return;
+  var R=cselRect(it);
+  $$('#page [data-id="'+it.id+'"] td[data-r]').forEach(function(t){ var r=+t.getAttribute('data-r'), c=+t.getAttribute('data-c'); if(r>=R.r1&&r<=R.r2&&c>=R.c1&&c<=R.c2) t.classList.add('csel'); });
+}
+function cselClear(){ if(ED && ED.cellSel){ ED.cellSel=null; paintCellSel(); } }
+function cselExec(cmd, val){ var it=cselMulti(); if(!it) return false; var anc=ED.cell;
+  cselCells(it).forEach(function(q){ var td=$('#page [data-id="'+it.id+'"] td[data-r="'+q.r+'"][data-c="'+q.c+'"]'); if(!td) return; td.focus(); var r=document.createRange(); r.selectNodeContents(td); var sl=window.getSelection(); sl.removeAllRanges(); sl.addRange(r); try{ document.execCommand(cmd, false, val==null?null:val); }catch(e){} });
+  var a=anc && $('#page [data-id="'+it.id+'"] td[data-r="'+anc.r+'"][data-c="'+anc.c+'"]'); if(a){ a.focus(); ED.cell=anc; var r2=document.createRange(); r2.selectNodeContents(a); r2.collapse(false); var s2=window.getSelection(); s2.removeAllRanges(); s2.addRange(r2); }
+  paintCellSel(); return true; }
+function cselRefocus(id, cl, keep){ ED.sel=id; startEdit(id); if(keep) ED.cellSel=keep; var td=$('#page td[data-r="'+cl.r+'"][data-c="'+cl.c+'"]'); if(td){ td.focus(); ED.cell=cl; } paintCellSel(); }
+(function(){
+  var tdOf=function(t){ return t && t.closest && t.closest('#page td[contenteditable][data-r]'); };
+  var pos=function(td){ return { r:+td.getAttribute('data-r'), c:+td.getAttribute('data-c') }; };
+  var drag=null;
+  document.addEventListener('mousedown', function(e){ if(!ED || !ED.editing || e.button!==0) return; var td=tdOf(e.target); if(!td){ return; }
+    var id=ED.editing;
+    if(e.shiftKey && ED.cell){ e.preventDefault(); var a=(ED.cellSel && ED.cellSel.id===id)?ED.cellSel.a:ED.cell; ED.cellSel={ id:id, a:a, b:pos(td) }; paintCellSel(); return; }
+    ED.cellSel=null; paintCellSel(); drag={ id:id, a:pos(td) };
+  }, true);
+  document.addEventListener('mousemove', function(e){ if(!drag || !ED || ED.editing!==drag.id) { drag=null; return; } if(!(e.buttons&1)){ drag=null; return; } var td=tdOf(e.target); if(!td) return; var b=pos(td);
+    if(b.r===drag.a.r && b.c===drag.a.c && !ED.cellSel) return;
+    ED.cellSel={ id:drag.id, a:drag.a, b:b }; try{ var sl=window.getSelection(); sl.removeAllRanges(); }catch(er){} e.preventDefault(); paintCellSel(); });
+  document.addEventListener('mouseup', function(){ if(drag && ED && ED.cellSel){ var a=$('#page [data-id="'+drag.id+'"] td[data-r="'+drag.a.r+'"][data-c="'+drag.a.c+'"]'); if(a){ a.focus(); ED.cell=drag.a; var r=document.createRange(); r.selectNodeContents(a); r.collapse(false); var sl=window.getSelection(); sl.removeAllRanges(); sl.addRange(r); } } drag=null; });
+  document.addEventListener('keydown', function(e){ var it=cselMulti(); if(!it || !tdOf(e.target)) return;
+    if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); cselClear(); return; }
+    if(e.key==='Delete'||e.key==='Backspace'){ e.preventDefault(); e.stopPropagation(); var id=it.id, cl=ED.cell, kp=ED.cellSel, cells=cselCells(it); commitEdit(); pushHist(); cells.forEach(function(q){ if(it.rows[q.r]) it.rows[q.r][q.c]=''; }); touch(); cselRefocus(id, cl, kp); return; }
+    if((e.ctrlKey||e.metaKey) && !e.altKey && /^[biu]$/i.test(e.key)){ e.preventDefault(); e.stopPropagation(); cselExec({ b:'bold', i:'italic', u:'underline' }[e.key.toLowerCase()]); return; }
+    if(e.key.length===1 && !e.ctrlKey && !e.metaKey && !e.altKey) cselClear();
+  }, true);
+})();
 function openCellBg(btn){
   if(!ED || !ED.editing) return; var cl=ED.cell; if(!cl){ toast('Clique d’abord dans une cellule.'); return; }
   closeMenus(); var m=document.createElement('div'); m.className='menu-pop cpop'; m.setAttribute('role','dialog'); m.setAttribute('aria-label','Fond de la cellule');
   var it0=findItem(curPage(),ED.editing), cur=(it0 && it0.cellBg && it0.cellBg[cl.r+','+cl.c])||'#EAF0FB';
   m.innerHTML='<div class="lab" style="margin:0 2px 8px">Fond de la cellule</div>';
   var td0=function(){ return $('#page td[data-r="'+cl.r+'"][data-c="'+cl.c+'"]'); };
-  var apply=function(c){ closeMenus(); var it=findItem(curPage(),ED.editing); if(!it) return; var id=it.id; commitEdit(); pushHist(); it.cellBg=it.cellBg||{}; if(c){ it.cellBg[cl.r+','+cl.c]=c; if(c!=='hatch') addRecent(c); } else delete it.cellBg[cl.r+','+cl.c]; if(!Object.keys(it.cellBg).length) delete it.cellBg;
-    touch(); ED.sel=id; startEdit(id); var td=td0(); if(td){ td.focus(); ED.cell=cl; } };
+  var apply=function(c){ closeMenus(); var it=findItem(curPage(),ED.editing); if(!it) return; var id=it.id, keep=ED.cellSel, cells=cselMulti()?cselCells(it):[cl]; commitEdit(); pushHist(); it.cellBg=it.cellBg||{}; cells.forEach(function(q){ if(c) it.cellBg[q.r+','+q.c]=c; else delete it.cellBg[q.r+','+q.c]; }); if(c && c!=='hatch') addRecent(c); if(!Object.keys(it.cellBg).length) delete it.cellBg;
+    touch(); cselRefocus(id, cl, keep); };
   buildPicker(m, cur, function(c){ var td=td0(); if(td) td.style.background=c; }, function(c, close){ if(close) apply(c); }, 'Appliquer');
   m.insertAdjacentHTML('beforeend', recentRow()+'<div class="crow"><button type="button" class="cact" data-hatchbg="1" title="Case grisée hachurée, comme une case « hors sujet »"><span class="sw" style="background:#F1F2F5 '+HATCH+'"></span>Hachuré</button><button type="button" class="cact" data-none="1">Sans fond</button></div>');
   m.addEventListener('mousedown', function(e){ if(!e.target.closest('input') && !e.target.closest('.sv')) e.preventDefault(); });
@@ -2295,7 +2343,7 @@ Object.keys(BOXK).forEach(function(k){ CMDS['bx_'+k]={ tab:'boxes', l:function()
 /* commandes de mise en forme, accessibles par raccourci (pas de bouton fixe dans les onglets) */
 (function(){
   var needSel=function(fn){ return function(){ if(!ED || !(ED.sel || (ED.multi && ED.multi.length>1))){ toast('Sélectionne d’abord un élément.'); return; } fn(); }; };
-  var exec=function(c){ return function(){ if(ED && ED.editing){ document.execCommand(c, false, null); if(typeof syncFmtState==='function') syncFmtState(); return; } var w={ bold:'fb', italic:'fi', underline:'fu' }[c]; if(w && ED && (ED.sel || ED.multi.length>1)) propAction(w); else toast('Ce raccourci s\u2019utilise pendant l\u2019écriture (F2 pour écrire dans l\u2019élément).'); }; };
+  var exec=function(c){ return function(){ if(ED && ED.editing){ if(cselExec(c)) return; document.execCommand(c, false, null); if(typeof syncFmtState==='function') syncFmtState(); return; } var w={ bold:'fb', italic:'fi', underline:'fu' }[c]; if(w && ED && (ED.sel || ED.multi.length>1)) propAction(w); else toast('Ce raccourci s\u2019utilise pendant l\u2019écriture (F2 pour écrire dans l\u2019élément).'); }; };
   var X={
     f_bold:['Gras', '<path d="M7 5h6a3.5 3.5 0 010 7H7zM7 12h7a3.5 3.5 0 010 7H7z"/>', exec('bold')],
     f_italic:['Italique', '<path d="M10 5h8M6 19h8M14 5l-4 14"/>', exec('italic')],
@@ -3035,7 +3083,7 @@ function startTblDrag(e, h){
   window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
 }
 function afterDraw(){
-  if(!ED) return;
+  if(!ED) return; paintCellSel();
   clearSize(); if(ED.sel && !ED.editing && (!ED.multi || ED.multi.length<2)) drawSize(ED.sel);
   if(ED.sel && !ED.editing && !(ED.drag && ED.drag.moved) && (!ED.multi || ED.multi.length<2)) drawGaps(ED.sel);
   drawSchemaCtl(); drawTableCtl();
@@ -3043,7 +3091,7 @@ function afterDraw(){
 function clearGuides(){ $$('#page .guide').forEach(function(g){ g.remove(); }); }
 function startEdit(id){
   if(!ED) return; var it=findItem(curPage(),id); if(!it||it.type==='arrow'||(it.type==='shape'&&(it.kind==='line'||it.kind==='brace'))) return;
-  ED.editSnap=JSON.stringify(ED.f.pages); ED.editing=id; drawPage();
+  ED.editSnap=JSON.stringify(ED.f.pages); ED.cellSel=null; ED.editing=id; drawPage();
   var el=$('#page [data-id="'+id+'"]'); if(!el) return;
   var t=el.querySelector('[data-edit]')||el.querySelector('td[contenteditable]'); if(!t) return;
   if(t.tagName==='TD') ED.cell={ r:+t.getAttribute('data-r'), c:+t.getAttribute('data-c') };
